@@ -4,61 +4,64 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Tests\Webhook;
 
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PostFinanceCheckout\PluginCore\Transaction\State as PluginCoreTransactionState;
-use PostFinanceCheckout\Sdk\Model\TransactionState as SdkTransactionState;
-use PostFinanceCheckout\PluginCore\Refund\State as PluginCoreRefundState;
-use PostFinanceCheckout\Sdk\Model\RefundState as SdkRefundState;
-use PostFinanceCheckout\PluginCore\Token\Version\State as PluginCoreTokenVersionState;
-use PostFinanceCheckout\Sdk\Model\TokenVersionState as SdkTokenVersionState;
+use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\DeliveryIndication\State as PluginCoreDeliveryIndicationState;
-use PostFinanceCheckout\Sdk\Model\DeliveryIndicationState as SdkDeliveryIndicationState;
 use PostFinanceCheckout\PluginCore\ManualTask\State as PluginCoreManualTaskState;
-use PostFinanceCheckout\Sdk\Model\ManualTaskState as SdkManualTaskState;
+use PostFinanceCheckout\PluginCore\Refund\State as PluginCoreRefundState;
+use PostFinanceCheckout\PluginCore\Token\Version\State as PluginCoreTokenVersionState;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\State as PluginCoreTransactionCompletionState;
-use PostFinanceCheckout\Sdk\Model\TransactionCompletionState as SdkTransactionCompletionState;
 use PostFinanceCheckout\PluginCore\Transaction\Invoice\State as PluginCoreTransactionInvoiceState;
-use PostFinanceCheckout\Sdk\Model\TransactionInvoiceState as SdkTransactionInvoiceState;
-use PostFinanceCheckout\Sdk\Model\TransactionVoidState as SdkTransactionVoidState;
+use PostFinanceCheckout\PluginCore\Transaction\State as PluginCoreTransactionState;
 use PostFinanceCheckout\PluginCore\Transaction\Void\State as PluginCoreTransactionVoidState;
+use PostFinanceCheckout\Sdk\Model\DeliveryIndicationState as SdkDeliveryIndicationState;
+use PostFinanceCheckout\Sdk\Model\ManualTaskState as SdkManualTaskState;
+use PostFinanceCheckout\Sdk\Model\RefundState as SdkRefundState;
+use PostFinanceCheckout\Sdk\Model\TokenVersionState as SdkTokenVersionState;
+use PostFinanceCheckout\Sdk\Model\TransactionCompletionState as SdkTransactionCompletionState;
+use PostFinanceCheckout\Sdk\Model\TransactionInvoiceState as SdkTransactionInvoiceState;
+use PostFinanceCheckout\Sdk\Model\TransactionState as SdkTransactionState;
+use PostFinanceCheckout\Sdk\Model\TransactionVoidState as SdkTransactionVoidState;
 
 class StateSynchronizationTest extends TestCase
 {
+    /**
+     * @return array<string, array{0: class-string, 1: class-string}>
+     */
     public static function stateMappingProvider(): array
     {
         return [
             'Delivery Indication States' => [
                 SdkDeliveryIndicationState::class,
-                PluginCoreDeliveryIndicationState::class
+                PluginCoreDeliveryIndicationState::class,
             ],
             'Refund States' => [
                 SdkRefundState::class,
-                PluginCoreRefundState::class
+                PluginCoreRefundState::class,
             ],
             'Manual Task States' => [
                 SdkManualTaskState::class,
-                PluginCoreManualTaskState::class
+                PluginCoreManualTaskState::class,
             ],
             'Token Version States' => [
                 SdkTokenVersionState::class,
-                PluginCoreTokenVersionState::class
+                PluginCoreTokenVersionState::class,
             ],
             'Transaction States' => [
                 SdkTransactionState::class,
-                PluginCoreTransactionState::class
+                PluginCoreTransactionState::class,
             ],
             'Transaction Completion States' => [
                 SdkTransactionCompletionState::class,
-                PluginCoreTransactionCompletionState::class
+                PluginCoreTransactionCompletionState::class,
             ],
             'Transaction Invoice States' => [
                 SdkTransactionInvoiceState::class,
-                PluginCoreTransactionInvoiceState::class
+                PluginCoreTransactionInvoiceState::class,
             ],
             'Transaction Void States' => [
                 SdkTransactionVoidState::class,
-                PluginCoreTransactionVoidState::class
+                PluginCoreTransactionVoidState::class,
             ],
         ];
     }
@@ -67,13 +70,13 @@ class StateSynchronizationTest extends TestCase
     public function testInternalEnumCoversAllSdkStates(string $sdkStateClass, string $internalEnumClass): void
     {
         $sdkStates = $sdkStateClass::getAllowableEnumValues();
-        $internalEnumValues = array_map(fn($case) => $case->value, $internalEnumClass::cases());
+        $internalEnumValues = array_map(fn ($case) => $case->value, $internalEnumClass::cases());
 
         foreach ($sdkStates as $sdkState) {
             $this->assertContains(
                 $sdkState,
                 $internalEnumValues,
-                "SDK state '{$sdkState}' is missing from internal enum {$internalEnumClass}"
+                "SDK state '{$sdkState}' is missing from internal enum {$internalEnumClass}",
             );
         }
     }

@@ -7,23 +7,33 @@ namespace PostFinanceCheckout\PluginCore\Tests\Transaction;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
-use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\State;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletion;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletionGatewayInterface;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletionService;
+use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
 
 class TransactionCompletionServiceTest extends TestCase
 {
-    private TransactionCompletionService $service;
     private MockObject|TransactionCompletionGatewayInterface $gateway;
     private MockObject|LoggerInterface $logger;
+    private TransactionCompletionService $service;
 
     protected function setUp(): void
     {
         $this->gateway = $this->createMock(TransactionCompletionGatewayInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->service = new TransactionCompletionService($this->gateway, $this->logger);
+    }
+
+    public function testCaptureFailure(): void
+    {
+        $this->gateway->expects($this->once())
+            ->method('capture')
+            ->willThrowException(new \Exception("SDK Error"));
+
+        $this->expectException(TransactionException::class);
+        $this->service->capture(1, 123);
     }
 
     public function testCaptureSuccess(): void
@@ -43,14 +53,14 @@ class TransactionCompletionServiceTest extends TestCase
         $this->assertSame($completion, $result);
     }
 
-    public function testCaptureFailure(): void
+    public function testVoidFailure(): void
     {
         $this->gateway->expects($this->once())
-            ->method('capture')
+            ->method('void')
             ->willThrowException(new \Exception("SDK Error"));
 
         $this->expectException(TransactionException::class);
-        $this->service->capture(1, 123);
+        $this->service->void(1, 123);
     }
 
     public function testVoidSuccess(): void
@@ -66,15 +76,5 @@ class TransactionCompletionServiceTest extends TestCase
 
         $result = $this->service->void($spaceId, $transactionId);
         $this->assertSame($state, $result);
-    }
-
-    public function testVoidFailure(): void
-    {
-        $this->gateway->expects($this->once())
-            ->method('void')
-            ->willThrowException(new \Exception("SDK Error"));
-
-        $this->expectException(TransactionException::class);
-        $this->service->void(1, 123);
     }
 }

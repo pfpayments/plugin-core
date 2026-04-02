@@ -6,23 +6,23 @@ namespace PostFinanceCheckout\PluginCore\Tests\Transaction;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use PostFinanceCheckout\PluginCore\Address\Address;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
+use PostFinanceCheckout\PluginCore\Token\Token;
+use PostFinanceCheckout\PluginCore\Token\TokenService;
 use PostFinanceCheckout\PluginCore\Transaction\RecurringTransactionGatewayInterface;
 use PostFinanceCheckout\PluginCore\Transaction\RecurringTransactionService;
 use PostFinanceCheckout\PluginCore\Transaction\Transaction;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionContext;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
-use PostFinanceCheckout\PluginCore\Token\TokenService;
-use PostFinanceCheckout\PluginCore\Token\Token;
-use PostFinanceCheckout\PluginCore\Address\Address;
 
 class RecurringTransactionServiceTest extends TestCase
 {
-    private RecurringTransactionService $service;
-    private MockObject|TransactionService $transactionService;
     private MockObject|RecurringTransactionGatewayInterface $gateway;
-    private MockObject|TokenService $tokenService;
     private MockObject|LoggerInterface $logger;
+    private RecurringTransactionService $service;
+    private MockObject|TokenService $tokenService;
+    private MockObject|TransactionService $transactionService;
 
     protected function setUp(): void
     {
@@ -34,7 +34,7 @@ class RecurringTransactionServiceTest extends TestCase
             $this->transactionService,
             $this->gateway,
             $this->tokenService,
-            $this->logger
+            $this->logger,
         );
     }
 

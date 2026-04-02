@@ -10,8 +10,9 @@ use PostFinanceCheckout\Sdk\ApiClient;
 class SdkProvider
 {
     private ApiClient $apiClient;
-    private int $spaceId;
+    /** @var array<class-string, object> */
     private array $serviceInstances = [];
+    private int $spaceId;
 
     public function __construct(Settings $settings)
     {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Webhook\Command;
 
-use PostFinanceCheckout\PluginCore\Webhook\WebhookContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Webhook\Exception\CommandException;
+use PostFinanceCheckout\PluginCore\Webhook\WebhookContext;
 
 /**
  * An abstract base class for webhook commands.
@@ -20,7 +20,8 @@ abstract class WebhookCommand implements WebhookCommandInterface
     public function __construct(
         protected readonly WebhookContext $context,
         protected readonly LoggerInterface $logger,
-    ) {}
+    ) {
+    }
 
     /**
      * Executes the command's domain-specific logic.

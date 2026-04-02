@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Webhook;
 
+use PostFinanceCheckout\PluginCore\Render\JsonStringableTrait;
 use PostFinanceCheckout\PluginCore\Webhook\Enum\WebhookListener as WebhookListenerEnum;
 
 /**
@@ -15,6 +16,8 @@ use PostFinanceCheckout\PluginCore\Webhook\Enum\WebhookListener as WebhookListen
  */
 class WebhookConfig
 {
+    use JsonStringableTrait;
+
     /**
      * @param string $url The endpoint URL for the webhook.
      * @param string $name A unique internal name for this webhook.
@@ -26,5 +29,6 @@ class WebhookConfig
         public readonly string $name,
         public readonly WebhookListenerEnum $entity,
         public readonly array $eventStates,
-    ) {}
+    ) {
+    }
 }

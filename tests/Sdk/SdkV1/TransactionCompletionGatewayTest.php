@@ -8,8 +8,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TransactionCompletionGateway;
-use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletion;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\State;
+use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletion;
 use PostFinanceCheckout\Sdk\Model\TransactionCompletion as SdkTransactionCompletion;
 use PostFinanceCheckout\Sdk\Model\TransactionCompletionState;
 use PostFinanceCheckout\Sdk\Model\TransactionVoid as SdkTransactionVoid;
@@ -19,9 +19,9 @@ use PostFinanceCheckout\Sdk\Service\TransactionVoidService as SdkTransactionVoid
 
 class TransactionCompletionGatewayTest extends TestCase
 {
+    private MockObject|SdkTransactionCompletionService $completionService;
     private TransactionCompletionGateway $gateway;
     private MockObject|SdkProvider $sdkProvider;
-    private MockObject|SdkTransactionCompletionService $completionService;
     private MockObject|SdkTransactionVoidService $voidService;
 
     protected function setUp(): void

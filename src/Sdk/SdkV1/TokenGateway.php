@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Sdk\SdkV1;
 
+use Psr\Log\LoggerInterface;
+use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
+use PostFinanceCheckout\PluginCore\Token\State as StateEnum;
 use PostFinanceCheckout\PluginCore\Token\Token;
 use PostFinanceCheckout\PluginCore\Token\TokenGatewayInterface;
-use PostFinanceCheckout\PluginCore\Token\State as StateEnum;
-use PostFinanceCheckout\Sdk\Service\TokenService as SdkTokenService;
 use PostFinanceCheckout\Sdk\Model\Token as SdkToken;
-use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use Psr\Log\LoggerInterface;
+use PostFinanceCheckout\Sdk\Service\TokenService as SdkTokenService;
 
 /**
  * SDK implementation of the TokenGatewayInterface.

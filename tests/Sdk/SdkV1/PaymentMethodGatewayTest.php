@@ -10,15 +10,15 @@ use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethod;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Sdk\SdkV1\PaymentMethodGateway;
-use PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration as SdkPaymentMethodConfiguration;
 use PostFinanceCheckout\Sdk\Model\CreationEntityState;
+use PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration as SdkPaymentMethodConfiguration;
 use PostFinanceCheckout\Sdk\Service\PaymentMethodConfigurationService as SdkPaymentMethodConfigurationService;
 
 class PaymentMethodGatewayTest extends TestCase
 {
     private PaymentMethodGateway $gateway;
-    private MockObject|SdkProvider $sdkProvider;
     private MockObject|LoggerInterface $logger;
+    private MockObject|SdkProvider $sdkProvider;
     private MockObject|SdkPaymentMethodConfigurationService $service;
 
     protected function setUp(): void

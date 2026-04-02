@@ -6,21 +6,38 @@ namespace PostFinanceCheckout\PluginCore\Tests\Webhook;
 
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Http\Request;
-use PostFinanceCheckout\PluginCore\Webhook\DefaultStateFetcher;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Settings\Settings;
-use PostFinanceCheckout\PluginCore\Transaction\TransactionGatewayInterface;
-use PostFinanceCheckout\PluginCore\Transaction\Transaction;
 use PostFinanceCheckout\PluginCore\Transaction\State;
+use PostFinanceCheckout\PluginCore\Transaction\Transaction;
+use PostFinanceCheckout\PluginCore\Transaction\TransactionGatewayInterface;
+use PostFinanceCheckout\PluginCore\Webhook\DefaultStateFetcher;
 use PostFinanceCheckout\Sdk\Service\WebhookEncryptionService;
 
 class DefaultStateFetcherTest extends TestCase
 {
+    private WebhookEncryptionService $encryptionServiceMock;
+    private DefaultStateFetcher $fetcher;
+    private TransactionGatewayInterface $gatewayMock;
     private SdkProvider $sdkProviderMock;
     private Settings $settingsMock;
-    private TransactionGatewayInterface $gatewayMock;
-    private DefaultStateFetcher $fetcher;
-    private WebhookEncryptionService $encryptionServiceMock;
+
+    /**
+     * Helper method to create Request instances for tests using reflection.
+     */
+    /**
+     * @param array<string, string> $headers
+     * @param array<string, mixed> $body
+     */
+    private function createRequest(array $headers, array $body, string $rawBody): Request
+    {
+        $reflection = new \ReflectionClass(Request::class);
+        $constructor = $reflection->getConstructor();
+        $constructor->setAccessible(true);
+        $request = $reflection->newInstanceWithoutConstructor();
+        $constructor->invoke($request, $headers, $body, $rawBody);
+        return $request;
+    }
 
     protected function setUp(): void
     {
@@ -40,8 +57,30 @@ class DefaultStateFetcherTest extends TestCase
         $this->fetcher = new DefaultStateFetcher(
             $this->sdkProviderMock,
             $this->settingsMock,
-            $this->gatewayMock
+            $this->gatewayMock,
         );
+    }
+
+    public function testFetchStateCallsGatewayWhenSignatureIsMissing(): void
+    {
+        // --- Arrange ---
+        $request = $this->createRequest([], [], ''); // No signature
+
+        $mockTransaction = new Transaction();
+        $mockTransaction->state = State::PENDING;
+
+        // Configure the gateway mock
+        $this->gatewayMock
+            ->expects($this->once())
+            ->method('get')
+            ->with(1234, 567)
+            ->willReturn($mockTransaction);
+
+        // --- Act ---
+        $state = $this->fetcher->fetchState($request, 567);
+
+        // --- Assert ---
+        $this->assertSame('PENDING', $state);
     }
 
     public function testFetchStateReturnsStateFromSignedPayloadWhenSignatureIsValid(): void
@@ -50,7 +89,7 @@ class DefaultStateFetcherTest extends TestCase
         $request = $this->createRequest(
             ['x-signature' => 'a-valid-signature-header'],
             ['state' => 'COMPLETED'],
-            'raw-body-content'
+            'raw-body-content',
         );
 
         $this->encryptionServiceMock
@@ -76,47 +115,12 @@ class DefaultStateFetcherTest extends TestCase
         $request = $this->createRequest(
             ['x-signature' => 'an-invalid-signature-header'],
             [],
-            'raw-body-content'
+            'raw-body-content',
         );
 
         $this->encryptionServiceMock->method('isContentValid')->willReturn(false);
 
         // --- Act ---
         $this->fetcher->fetchState($request, 567);
-    }
-
-    public function testFetchStateCallsGatewayWhenSignatureIsMissing(): void
-    {
-        // --- Arrange ---
-        $request = $this->createRequest([], [], ''); // No signature
-
-        $mockTransaction = new Transaction();
-        $mockTransaction->state = State::PENDING;
-
-        // Configure the gateway mock
-        $this->gatewayMock
-            ->expects($this->once())
-            ->method('get')
-            ->with(1234, 567)
-            ->willReturn($mockTransaction);
-
-        // --- Act ---
-        $state = $this->fetcher->fetchState($request, 567);
-
-        // --- Assert ---
-        $this->assertSame('PENDING', $state);
-    }
-
-    /**
-     * Helper method to create Request instances for tests using reflection.
-     */
-    private function createRequest(array $headers, array $body, string $rawBody): Request
-    {
-        $reflection = new \ReflectionClass(Request::class);
-        $constructor = $reflection->getConstructor();
-        $constructor->setAccessible(true);
-        $request = $reflection->newInstanceWithoutConstructor();
-        $constructor->invoke($request, $headers, $body, $rawBody);
-        return $request;
     }
 }

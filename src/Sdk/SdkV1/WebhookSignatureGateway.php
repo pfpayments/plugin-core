@@ -12,7 +12,7 @@ use PostFinanceCheckout\Sdk\Service\WebhookEncryptionService as SdkWebhookEncryp
 /**
  * Class WebhookSignatureGateway
  *
- * Implementation of the WebhookSignatureGatewayInterface using the Wallee SDK.
+ * Implementation of the WebhookSignatureGatewayInterface using the PostFinanceCheckout SDK.
  */
 class WebhookSignatureGateway implements WebhookSignatureGatewayInterface
 {

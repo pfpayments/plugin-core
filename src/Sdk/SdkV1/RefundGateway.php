@@ -10,15 +10,15 @@ use PostFinanceCheckout\PluginCore\Refund\RefundContext;
 use PostFinanceCheckout\PluginCore\Refund\RefundGatewayInterface;
 use PostFinanceCheckout\PluginCore\Refund\State as StateEnum;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\Sdk\Model\LineItemReductionCreate as SdkLineItemReductionCreate;
-use PostFinanceCheckout\Sdk\Model\RefundCreate as SdkRefundCreate;
-use PostFinanceCheckout\Sdk\Model\RefundType as SdkRefundType;
-use PostFinanceCheckout\Sdk\Service\RefundService as SdkRefundService;
+use PostFinanceCheckout\Sdk\Model\CriteriaOperator as SdkCriteriaOperator;
 use PostFinanceCheckout\Sdk\Model\EntityQuery as SdkEntityQuery;
 use PostFinanceCheckout\Sdk\Model\EntityQueryFilter as SdkEntityQueryFilter;
 use PostFinanceCheckout\Sdk\Model\EntityQueryFilterType as SdkEntityQueryFilterType;
-use PostFinanceCheckout\Sdk\Model\CriteriaOperator as SdkCriteriaOperator;
+use PostFinanceCheckout\Sdk\Model\LineItemReductionCreate as SdkLineItemReductionCreate;
 use PostFinanceCheckout\Sdk\Model\Refund as SdkRefund;
+use PostFinanceCheckout\Sdk\Model\RefundCreate as SdkRefundCreate;
+use PostFinanceCheckout\Sdk\Model\RefundType as SdkRefundType;
+use PostFinanceCheckout\Sdk\Service\RefundService as SdkRefundService;
 
 class RefundGateway implements RefundGatewayInterface
 {
@@ -52,9 +52,30 @@ class RefundGateway implements RefundGatewayInterface
             }
             return $refunds;
         } catch (\Throwable $e) {
-            $this->logger->error("Failed to find refunds for Transaction $transactionId: " . $e->getMessage());
+            $this->logger->error("Failed to find refunds for Transaction $transactionId: {$e->getMessage()}");
             return [];
         }
+    }
+
+    private function mapToRefund(SdkRefund $sdkRefund, int $transactionId): Refund
+    {
+        $refund = new Refund();
+        $refund->id = (int)$sdkRefund->getId();
+        $refund->amount = (float)$sdkRefund->getAmount();
+        $refund->transactionId = $transactionId;
+        $refund->externalId = $sdkRefund->getExternalId();
+
+        $refund->state = match ((string)$sdkRefund->getState()) {
+            'CREATE' => StateEnum::CREATE,
+            'SCHEDULED' => StateEnum::SCHEDULED,
+            'PENDING' => StateEnum::PENDING,
+            'MANUAL_CHECK' => StateEnum::MANUAL_CHECK,
+            'FAILED' => StateEnum::FAILED,
+            'SUCCESSFUL' => StateEnum::SUCCESSFUL,
+            default => StateEnum::PENDING, // Safe fallback
+        };
+
+        return $refund;
     }
 
     public function refund(int $spaceId, RefundContext $context): Refund
@@ -81,9 +102,9 @@ class RefundGateway implements RefundGatewayInterface
             if (!empty($context->lineItems)) {
                 $sdkReductions = [];
                 foreach ($context->lineItems as $item) {
-                    $uniqueId = $item['uniqueId'] ?? $item->uniqueId ?? null;
-                    $qty = (float)($item['quantity'] ?? $item->quantity ?? 0);
-                    $amt = (float)($item['amount'] ?? $item->amount ?? 0);
+                    $uniqueId = $item['uniqueId'] ?? null;
+                    $qty = (float)($item['quantity'] ?? 0);
+                    $amt = (float)($item['amount'] ?? 0);
 
                     $this->logger->debug("Adding Reduction: ID=$uniqueId, Qty=$qty, Amt=$amt");
 
@@ -98,7 +119,7 @@ class RefundGateway implements RefundGatewayInterface
 
             $this->logger->debug("Refund Create Payload", [
                 'amount' => $sdkRefundCreate->getAmount(),
-                'reductions_count' => count($sdkRefundCreate->getReductions() ?? [])
+                'reductions_count' => count($sdkRefundCreate->getReductions() ?? []),
             ]);
 
             $sdkRefund = $this->sdkRefundService->refund($spaceId, $sdkRefundCreate);
@@ -107,31 +128,10 @@ class RefundGateway implements RefundGatewayInterface
 
             return $this->mapToRefund($sdkRefund, $context->transactionId);
         } catch (\Throwable $e) {
-            $this->logger->error("Refund failed for Transaction {$context->transactionId}: " . $e->getMessage(), [
+            $this->logger->error("Refund failed for Transaction {$context->transactionId}: {$e->getMessage()}", [
                 'trace' => $e->getTraceAsString(),
             ]);
             throw $e;
         }
-    }
-
-    private function mapToRefund(SdkRefund $sdkRefund, int $transactionId): Refund
-    {
-        $refund = new Refund();
-        $refund->id = (int)$sdkRefund->getId();
-        $refund->amount = (float)$sdkRefund->getAmount();
-        $refund->transactionId = $transactionId;
-        $refund->externalId = $sdkRefund->getExternalId();
-
-        $refund->state = match ((string)$sdkRefund->getState()) {
-            'CREATE' => StateEnum::CREATE,
-            'SCHEDULED' => StateEnum::SCHEDULED,
-            'PENDING' => StateEnum::PENDING,
-            'MANUAL_CHECK' => StateEnum::MANUAL_CHECK,
-            'FAILED' => StateEnum::FAILED,
-            'SUCCESSFUL' => StateEnum::SUCCESSFUL,
-            default => StateEnum::PENDING, // Safe fallback
-        };
-
-        return $refund;
     }
 }

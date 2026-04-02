@@ -6,10 +6,6 @@ namespace PostFinanceCheckout\PluginCore\Transaction;
 
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Token\TokenService;
-use PostFinanceCheckout\PluginCore\Transaction\Transaction;
-use PostFinanceCheckout\PluginCore\Transaction\TransactionContext;
-use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
-
 
 /**
  * Service for handling recurring transactions.
@@ -21,7 +17,8 @@ readonly class RecurringTransactionService
         private RecurringTransactionGatewayInterface $recurringGateway,
         private TokenService $tokenService,
         private LoggerInterface $logger,
-    ) {}
+    ) {
+    }
 
     /**
      * Processes a recurring payment for an existing transaction.

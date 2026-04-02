@@ -8,10 +8,11 @@ use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethod;
 use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethodGatewayInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
+use PostFinanceCheckout\Sdk\Model\CreationEntityState as SdkCreationEntityState;
+use PostFinanceCheckout\Sdk\Model\CriteriaOperator as SdkCriteriaOperator;
 use PostFinanceCheckout\Sdk\Model\EntityQuery as SdkEntityQuery;
 use PostFinanceCheckout\Sdk\Model\EntityQueryFilter as SdkEntityQueryFilter;
 use PostFinanceCheckout\Sdk\Model\EntityQueryFilterType as SdkEntityQueryFilterType;
-use PostFinanceCheckout\Sdk\Model\CriteriaOperator as SdkCriteriaOperator;
 use PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration as SdkPaymentMethodConfiguration;
 use PostFinanceCheckout\Sdk\Service\PaymentMethodConfigurationService as SdkPaymentMethodConfigurationService;
 
@@ -27,7 +28,26 @@ class PaymentMethodGateway implements PaymentMethodGatewayInterface
     public function __construct(
         private readonly SdkProvider $provider,
         private readonly LoggerInterface $logger,
-    ) {}
+    ) {
+    }
+
+    /**
+     * Helper to create an SDK filter.
+     *
+     * @param string $fieldName The field to filter on.
+     * @param mixed $value The value to filter by.
+     * @param string $operator The operator to use (defaults to EQUALS).
+     * @return SdkEntityQueryFilter The created filter.
+     */
+    private function createFilter(string $fieldName, mixed $value, string $operator = SdkCriteriaOperator::EQUALS): SdkEntityQueryFilter
+    {
+        $filter = new SdkEntityQueryFilter();
+        $filter->setType(SdkEntityQueryFilterType::LEAF);
+        $filter->setOperator($operator);
+        $filter->setFieldName($fieldName);
+        $filter->setValue($value);
+        return $filter;
+    }
 
     /**
      * @inheritDoc
@@ -59,17 +79,16 @@ class PaymentMethodGateway implements PaymentMethodGatewayInterface
             $query = new SdkEntityQuery();
 
             if ($state !== null) {
-                $filter = new SdkEntityQueryFilter();
-                $filter->setFieldName('state');
-                $filter->setValue($state);
-                $filter->setOperator(SdkCriteriaOperator::EQUALS);
-                $filter->setType(SdkEntityQueryFilterType::LEAF);
-                $query->setFilter($filter);
+                $query->setFilter($this->createFilter('state', $state));
+            } else {
+                // By default, we exclude deleted payment methods as they are usually not relevant
+                // for active operations.
+                $query->setFilter($this->createFilter('state', SdkCreationEntityState::DELETED, SdkCriteriaOperator::NOT_EQUALS));
             }
 
             $results = $service->search($spaceId, $query);
 
-            return array_map(fn(SdkPaymentMethodConfiguration $config) => $this->mapToEntity($config), $results);
+            return array_map(fn (SdkPaymentMethodConfiguration $config) => $this->mapToEntity($config), $results);
         } catch (\Exception $e) {
             $this->logger->error(sprintf('Failed to fetch payment methods from SDK: %s', $e->getMessage()));
             throw $e;
@@ -111,15 +130,8 @@ class PaymentMethodGateway implements PaymentMethodGatewayInterface
         }
 
         if (is_array($input)) {
-            // Prefer English
-            if (isset($input['en-US'])) {
-                return $input['en-US'];
-            }
-            if (isset($input['en-GB'])) {
-                return $input['en-GB'];
-            }
-            // Fallback to first available
-            return reset($input) ?: null;
+            // Prefer English, fallback to first available
+            return $input['en-US'] ?? $input['en-GB'] ?? reset($input) ?: null;
         }
 
         return null;

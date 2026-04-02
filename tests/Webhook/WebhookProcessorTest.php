@@ -5,28 +5,27 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Tests\Webhook;
 
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PostFinanceCheckout\PluginCore\Http\Request;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
+use PostFinanceCheckout\PluginCore\Webhook\Command\WebhookCommandInterface;
 use PostFinanceCheckout\PluginCore\Webhook\Enum\WebhookListener;
-use PostFinanceCheckout\PluginCore\Webhook\WebhookProcessor;
-use PostFinanceCheckout\PluginCore\Webhook\StateFetcherInterface;
-use PostFinanceCheckout\PluginCore\Webhook\WebhookLifecycleHandler;
-use PostFinanceCheckout\PluginCore\Webhook\StateValidator;
+use PostFinanceCheckout\PluginCore\Webhook\Exception\CommandException;
 use PostFinanceCheckout\PluginCore\Webhook\Listener\WebhookListenerInterface;
 use PostFinanceCheckout\PluginCore\Webhook\Listener\WebhookListenerRegistry;
-use PostFinanceCheckout\PluginCore\Webhook\Command\WebhookCommandInterface;
-use PostFinanceCheckout\PluginCore\Webhook\Exception\CommandException;
+use PostFinanceCheckout\PluginCore\Webhook\StateFetcherInterface;
+use PostFinanceCheckout\PluginCore\Webhook\StateValidator;
+use PostFinanceCheckout\PluginCore\Webhook\WebhookLifecycleHandler;
+use PostFinanceCheckout\PluginCore\Webhook\WebhookProcessor;
 
 class WebhookProcessorTest extends TestCase
 {
-    private WebhookListenerRegistry $registryMock;
-    private StateValidator $validatorMock;
     private WebhookLifecycleHandler $lifecycleHandlerMock;
     private LoggerInterface $loggerMock;
     private WebhookProcessor $processor;
-    private StateFetcherInterface $stateFetcherMock;
+    private WebhookListenerRegistry $registryMock;
     private Request $requestMock;
+    private StateFetcherInterface $stateFetcherMock;
+    private StateValidator $validatorMock;
 
     protected function setUp(): void
     {
@@ -42,32 +41,122 @@ class WebhookProcessorTest extends TestCase
             $this->validatorMock,
             $this->lifecycleHandlerMock,
             $this->stateFetcherMock,
-            $this->loggerMock
+            $this->loggerMock,
         );
     }
 
-    public function testProcessSuccessfullyFindsAndExecutesCommand(): void
+    public function testExecutesAllIntermediateCommandsOnCatchUp(): void
     {
-        $this->stateFetcherMock->method('fetchState')->willReturn('COMPLETED');
+        $catchUpPath = ['CONFIRMED', 'PROCESSING', 'AUTHORIZED'];
+
+        $this->stateFetcherMock->method('fetchState')->willReturn('AUTHORIZED');
         $this->lifecycleHandlerMock->method('getLastProcessedState')->willReturn('PENDING');
-        $this->validatorMock->method('getTransitionPath')->willReturn(['COMPLETED']);
+        $this->validatorMock->method('getTransitionPath')->willReturn($catchUpPath);
 
-        $commandMock = $this->createMock(WebhookCommandInterface::class);
-        $commandMock->expects($this->once())->method('execute');
+        $commandConfirmed = $this->createMock(WebhookCommandInterface::class);
+        $commandConfirmed->expects($this->once())->method('execute');
+        $listenerConfirmed = $this->createMock(WebhookListenerInterface::class);
+        $listenerConfirmed->method('getCommand')->willReturn($commandConfirmed);
 
-        $listenerMock = $this->createMock(WebhookListenerInterface::class);
-        $listenerMock->method('getCommand')->willReturn($commandMock);
+        $commandProcessing = $this->createMock(WebhookCommandInterface::class);
+        $commandProcessing->expects($this->once())->method('execute');
+        $listenerProcessing = $this->createMock(WebhookListenerInterface::class);
+        $listenerProcessing->method('getCommand')->willReturn($commandProcessing);
 
-        $this->registryMock->method('findListener')->willReturn($listenerMock);
+        $commandAuthorized = $this->createMock(WebhookCommandInterface::class);
+        $commandAuthorized->expects($this->once())->method('execute');
+        $listenerAuthorized = $this->createMock(WebhookListenerInterface::class);
+        $listenerAuthorized->method('getCommand')->willReturn($commandAuthorized);
 
-        $this->lifecycleHandlerMock->expects($this->once())->method('preProcess')->willReturn(true);
-        $this->lifecycleHandlerMock->expects($this->once())->method('postProcess');
-        $this->lifecycleHandlerMock->expects($this->never())->method('onFailure');
+        $this->registryMock->method('findListener')
+            ->willReturnMap([
+                [WebhookListener::TRANSACTION, 'CONFIRMED', $listenerConfirmed],
+                [WebhookListener::TRANSACTION, 'PROCESSING', $listenerProcessing],
+                [WebhookListener::TRANSACTION, 'AUTHORIZED', $listenerAuthorized],
+            ]);
+
+        $this->lifecycleHandlerMock->expects($this->exactly(3))->method('preProcess')->willReturn(true);
+        $this->lifecycleHandlerMock->expects($this->exactly(3))->method('postProcess');
 
         $this->requestMock->method('get')->willReturnMap([
             ['listenerEntityTechnicalName', null, 'Transaction'],
             ['entityId', null, 123],
             ['spaceId', null, 405], // <-- FIX: Add spaceId
+        ]);
+
+        $this->processor->process($this->requestMock);
+    }
+
+    public function testExecutesOnlyTargetCommandForAnyToTransition(): void
+    {
+        $targetState = 'VOIDED';
+
+        $this->stateFetcherMock->method('fetchState')->willReturn($targetState);
+        $this->lifecycleHandlerMock->method('getLastProcessedState')->willReturn('PROCESSING');
+        $this->validatorMock->method('getTransitionPath')->willReturn([$targetState]);
+
+        $commandVoided = $this->createMock(WebhookCommandInterface::class);
+        $commandVoided->expects($this->once())->method('execute');
+
+        $listenerVoided = $this->createMock(WebhookListenerInterface::class);
+        $listenerVoided->method('getCommand')->willReturn($commandVoided);
+
+        $this->registryMock->method('findListener')
+            ->with(WebhookListener::TRANSACTION, $targetState)
+            ->willReturn($listenerVoided);
+
+        $this->lifecycleHandlerMock->expects($this->once())->method('preProcess')->willReturn(true);
+        $this->lifecycleHandlerMock->expects($this->once())->method('postProcess');
+
+        $this->requestMock->method('get')->willReturnMap([
+            ['listenerEntityTechnicalName', null, 'Transaction'],
+            ['entityId', null, 123],
+            ['spaceId', null, 405], // <-- FIX: Add spaceId
+        ]);
+
+        $this->processor->process($this->requestMock);
+    }
+
+    public function testIgnoresDuplicateWebhook(): void
+    {
+        $this->stateFetcherMock->method('fetchState')->willReturn('COMPLETED');
+        $this->lifecycleHandlerMock->method('getLastProcessedState')->willReturn('CREATE');
+        $this->validatorMock->method('getTransitionPath')->willReturn([]); // Empty path = duplicate
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('debug')
+            ->with($this->stringContains('already processed'));
+
+        $this->registryMock->expects($this->never())->method('findListener');
+
+        $this->requestMock->method('get')->willReturnMap([
+            ['listenerEntityTechnicalName', null, 'Transaction'],
+            ['entityId', null, 123],
+            ['spaceId', null, 405], // <-- FIX: Add spaceId
+        ]);
+
+        $this->processor->process($this->requestMock);
+    }
+
+    public function testLogsDebugOnInvalidOrStaleStateTransition(): void
+    {
+        $this->stateFetcherMock->method('fetchState')->willReturn('COMPLETED');
+        $this->lifecycleHandlerMock->method('getLastProcessedState')->willReturn('PENDING');
+        $this->validatorMock->method('getTransitionPath')->willReturn(null); // Invalid/Stale transition
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('debug') // Expect DEBUG
+            ->with($this->stringContains('not possible or already passed')); // Updated message check
+
+        $this->lifecycleHandlerMock->expects($this->never())->method('preProcess');
+        $this->registryMock->expects($this->never())->method('findListener');
+
+        $this->requestMock->method('get')->willReturnMap([
+            ['listenerEntityTechnicalName', null, 'Transaction'],
+            ['entityId', null, 123],
+            ['spaceId', null, 405],
         ]);
 
         $this->processor->process($this->requestMock);
@@ -108,7 +197,7 @@ class WebhookProcessorTest extends TestCase
         $listenerMock->method('getCommand')->willReturn($commandMock);
 
         $this->registryMock->method('findListener')->willReturn($listenerMock);
-        
+
         $this->lifecycleHandlerMock->expects($this->once())->method('preProcess')->willReturn(true);
         $this->lifecycleHandlerMock->expects($this->once())->method('onFailure');
         $this->lifecycleHandlerMock->expects($this->never())->method('postProcess');
@@ -122,113 +211,23 @@ class WebhookProcessorTest extends TestCase
         $this->processor->process($this->requestMock);
     }
 
-    public function testLogsDebugOnInvalidOrStaleStateTransition(): void
+    public function testProcessSuccessfullyFindsAndExecutesCommand(): void
     {
         $this->stateFetcherMock->method('fetchState')->willReturn('COMPLETED');
         $this->lifecycleHandlerMock->method('getLastProcessedState')->willReturn('PENDING');
-        $this->validatorMock->method('getTransitionPath')->willReturn(null); // Invalid/Stale transition
+        $this->validatorMock->method('getTransitionPath')->willReturn(['COMPLETED']);
 
-        $this->loggerMock
-            ->expects($this->once())
-            ->method('debug') // Expect DEBUG
-            ->with($this->stringContains('not possible or already passed')); // Updated message check
+        $commandMock = $this->createMock(WebhookCommandInterface::class);
+        $commandMock->expects($this->once())->method('execute');
 
-        $this->lifecycleHandlerMock->expects($this->never())->method('preProcess');
-        $this->registryMock->expects($this->never())->method('findListener');
+        $listenerMock = $this->createMock(WebhookListenerInterface::class);
+        $listenerMock->method('getCommand')->willReturn($commandMock);
 
-        $this->requestMock->method('get')->willReturnMap([
-            ['listenerEntityTechnicalName', null, 'Transaction'],
-            ['entityId', null, 123],
-            ['spaceId', null, 405],
-        ]);
-
-        $this->processor->process($this->requestMock);
-    }
-
-    public function testIgnoresDuplicateWebhook(): void
-    {
-        $this->stateFetcherMock->method('fetchState')->willReturn('COMPLETED');
-        $this->lifecycleHandlerMock->method('getLastProcessedState')->willReturn('CREATE');
-        $this->validatorMock->method('getTransitionPath')->willReturn([]); // Empty path = duplicate
-
-        $this->loggerMock
-            ->expects($this->once())
-            ->method('debug')
-            ->with($this->stringContains('already processed'));
-
-        $this->registryMock->expects($this->never())->method('findListener');
-
-        $this->requestMock->method('get')->willReturnMap([
-            ['listenerEntityTechnicalName', null, 'Transaction'],
-            ['entityId', null, 123],
-            ['spaceId', null, 405], // <-- FIX: Add spaceId
-        ]);
-
-        $this->processor->process($this->requestMock);
-    }
-
-    public function testExecutesAllIntermediateCommandsOnCatchUp(): void
-    {
-        $catchUpPath = ['CONFIRMED', 'PROCESSING', 'AUTHORIZED'];
-        
-        $this->stateFetcherMock->method('fetchState')->willReturn('AUTHORIZED');
-        $this->lifecycleHandlerMock->method('getLastProcessedState')->willReturn('PENDING');
-        $this->validatorMock->method('getTransitionPath')->willReturn($catchUpPath);
-
-        $commandConfirmed = $this->createMock(WebhookCommandInterface::class);
-        $commandConfirmed->expects($this->once())->method('execute');
-        $listenerConfirmed = $this->createMock(WebhookListenerInterface::class);
-        $listenerConfirmed->method('getCommand')->willReturn($commandConfirmed);
-
-        $commandProcessing = $this->createMock(WebhookCommandInterface::class);
-        $commandProcessing->expects($this->once())->method('execute');
-        $listenerProcessing = $this->createMock(WebhookListenerInterface::class);
-        $listenerProcessing->method('getCommand')->willReturn($commandProcessing);
-
-        $commandAuthorized = $this->createMock(WebhookCommandInterface::class);
-        $commandAuthorized->expects($this->once())->method('execute');
-        $listenerAuthorized = $this->createMock(WebhookListenerInterface::class);
-        $listenerAuthorized->method('getCommand')->willReturn($commandAuthorized);
-
-        $this->registryMock->method('findListener')
-            ->willReturnMap([
-                [WebhookListener::TRANSACTION, 'CONFIRMED', $listenerConfirmed],
-                [WebhookListener::TRANSACTION, 'PROCESSING', $listenerProcessing],
-                [WebhookListener::TRANSACTION, 'AUTHORIZED', $listenerAuthorized],
-            ]);
-            
-        $this->lifecycleHandlerMock->expects($this->exactly(3))->method('preProcess')->willReturn(true);
-        $this->lifecycleHandlerMock->expects($this->exactly(3))->method('postProcess');
-
-        $this->requestMock->method('get')->willReturnMap([
-            ['listenerEntityTechnicalName', null, 'Transaction'],
-            ['entityId', null, 123],
-            ['spaceId', null, 405], // <-- FIX: Add spaceId
-        ]);
-
-        $this->processor->process($this->requestMock);
-    }
-
-    public function testExecutesOnlyTargetCommandForAnyToTransition(): void
-    {
-        $targetState = 'VOIDED';
-
-        $this->stateFetcherMock->method('fetchState')->willReturn($targetState);
-        $this->lifecycleHandlerMock->method('getLastProcessedState')->willReturn('PROCESSING');
-        $this->validatorMock->method('getTransitionPath')->willReturn([$targetState]);
-
-        $commandVoided = $this->createMock(WebhookCommandInterface::class);
-        $commandVoided->expects($this->once())->method('execute');
-
-        $listenerVoided = $this->createMock(WebhookListenerInterface::class);
-        $listenerVoided->method('getCommand')->willReturn($commandVoided);
-
-        $this->registryMock->method('findListener')
-            ->with(WebhookListener::TRANSACTION, $targetState)
-            ->willReturn($listenerVoided);
+        $this->registryMock->method('findListener')->willReturn($listenerMock);
 
         $this->lifecycleHandlerMock->expects($this->once())->method('preProcess')->willReturn(true);
         $this->lifecycleHandlerMock->expects($this->once())->method('postProcess');
+        $this->lifecycleHandlerMock->expects($this->never())->method('onFailure');
 
         $this->requestMock->method('get')->willReturnMap([
             ['listenerEntityTechnicalName', null, 'Transaction'],

@@ -10,15 +10,15 @@ use Psr\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TokenGateway;
 use PostFinanceCheckout\PluginCore\Token\Token;
-use PostFinanceCheckout\Sdk\Model\Token as SdkToken;
 use PostFinanceCheckout\Sdk\Model\CreationEntityState;
+use PostFinanceCheckout\Sdk\Model\Token as SdkToken;
 use PostFinanceCheckout\Sdk\Service\TokenService as SdkTokenService;
 
 class TokenGatewayTest extends TestCase
 {
     private TokenGateway $gateway;
-    private MockObject|SdkProvider $sdkProvider;
     private MockObject|LoggerInterface $logger;
+    private MockObject|SdkProvider $sdkProvider;
     private MockObject|SdkTokenService $tokenService;
 
     protected function setUp(): void

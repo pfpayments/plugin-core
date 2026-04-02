@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Tests\Transaction;
 
 use PHPUnit\Framework\TestCase;
-use PostFinanceCheckout\PluginCore\Address\Address;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionContext;
+use PostFinanceCheckout\PluginCore\Address\Address;
 
 class TransactionContextTest extends TestCase
 {

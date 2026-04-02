@@ -2,39 +2,34 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV2;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TransactionCompletionGateway;
-use PostFinanceCheckout\PluginCore\Transaction\Completion\State;
+use PostFinanceCheckout\PluginCore\Sdk\SdkV2\TransactionCompletionGateway;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletion;
+use PostFinanceCheckout\PluginCore\Transaction\Completion\State;
 use PostFinanceCheckout\Sdk\Model\TransactionCompletion as SdkTransactionCompletion;
-use PostFinanceCheckout\Sdk\Model\TransactionCompletionState;
+use PostFinanceCheckout\Sdk\Model\TransactionCompletionState as SdkTransactionCompletionState;
 use PostFinanceCheckout\Sdk\Model\TransactionVoid as SdkTransactionVoid;
-use PostFinanceCheckout\Sdk\Model\TransactionVoidState;
-use PostFinanceCheckout\Sdk\Service\TransactionCompletionService as SdkTransactionCompletionService;
-use PostFinanceCheckout\Sdk\Service\TransactionVoidService as SdkTransactionVoidService;
+use PostFinanceCheckout\Sdk\Model\TransactionVoidState as SdkTransactionVoidState;
+use PostFinanceCheckout\Sdk\Service\TransactionsService as SdkTransactionsService;
 
 class TransactionCompletionGatewayTest extends TestCase
 {
-    private MockObject|SdkTransactionCompletionService $completionService;
     private TransactionCompletionGateway $gateway;
     private MockObject|SdkProvider $sdkProvider;
-    private MockObject|SdkTransactionVoidService $voidService;
+    private MockObject|SdkTransactionsService $transactionsService;
 
     protected function setUp(): void
     {
         $this->sdkProvider = $this->createMock(SdkProvider::class);
-        $this->completionService = $this->createMock(SdkTransactionCompletionService::class);
-        $this->voidService = $this->createMock(SdkTransactionVoidService::class);
+        $this->transactionsService = $this->createMock(SdkTransactionsService::class);
 
         $this->sdkProvider->method('getService')
-            ->willReturnMap([
-                [SdkTransactionCompletionService::class, $this->completionService],
-                [SdkTransactionVoidService::class, $this->voidService],
-            ]);
+            ->with(SdkTransactionsService::class)
+            ->willReturn($this->transactionsService);
 
         $this->gateway = new TransactionCompletionGateway($this->sdkProvider);
     }
@@ -47,11 +42,12 @@ class TransactionCompletionGatewayTest extends TestCase
         $sdkCompletion = new SdkTransactionCompletion();
         $sdkCompletion->setId(10);
         $sdkCompletion->setLinkedTransaction($transactionId);
-        $sdkCompletion->setState(TransactionCompletionState::SUCCESSFUL);
+        $sdkCompletion->setState(SdkTransactionCompletionState::SUCCESSFUL);
 
-        $this->completionService->expects($this->once())
-            ->method('completeOnline')
-            ->with($spaceId, $transactionId)
+        // V2: postPaymentTransactionsIdCompleteOnline($id, $spaceId)
+        $this->transactionsService->expects($this->once())
+            ->method('postPaymentTransactionsIdCompleteOnline')
+            ->with($transactionId, $spaceId)
             ->willReturn($sdkCompletion);
 
         $result = $this->gateway->capture($spaceId, $transactionId);
@@ -68,11 +64,12 @@ class TransactionCompletionGatewayTest extends TestCase
         $transactionId = 2;
 
         $sdkVoid = new SdkTransactionVoid();
-        $sdkVoid->setState(TransactionVoidState::SUCCESSFUL);
+        $sdkVoid->setState(SdkTransactionVoidState::SUCCESSFUL);
 
-        $this->voidService->expects($this->once())
-            ->method('voidOnline')
-            ->with($spaceId, $transactionId)
+        // V2: postPaymentTransactionsIdVoidOnline($id, $spaceId)
+        $this->transactionsService->expects($this->once())
+            ->method('postPaymentTransactionsIdVoidOnline')
+            ->with($transactionId, $spaceId)
             ->willReturn($sdkVoid);
 
         $result = $this->gateway->void($spaceId, $transactionId);

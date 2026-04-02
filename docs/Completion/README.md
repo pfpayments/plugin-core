@@ -28,7 +28,7 @@ The `TransactionCompletionService` requires the `TransactionCompletionGatewayInt
 
 ```php
 use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletionService;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TransactionCompletionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\SdkV2\TransactionCompletionGateway;
 
 // 1. Setup Gateways
 $completionGateway = new TransactionCompletionGateway($sdkProvider);

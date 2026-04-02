@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MyPlugin\ExampleWebhookImplementation;
 
 use PostFinanceCheckout\PluginCore\State\StateMapperInterface;
-use PostFinanceCheckout\PluginCore\Transaction\State;
+use PostFinanceCheckout\PluginCore\Transaction\State as StateEnum;
 use \BackedEnum;
 
 /**
@@ -14,19 +14,19 @@ use \BackedEnum;
 class MyExampleStateMapper implements StateMapperInterface
 {
     private const SHOP_STATE_MAP = [
-        'awaiting-payment' => State::PENDING,
-        'processing'       => State::CONFIRMED,
-        'shipped'          => State::FULFILL,
-        'cancelled'        => State::VOIDED,
+        'awaiting-payment' => StateEnum::PENDING,
+        'processing'       => StateEnum::CONFIRMED,
+        'shipped'          => StateEnum::FULFILL,
+        'cancelled'        => StateEnum::VOIDED,
     ];
 
     public function getLocalState(BackedEnum $pluginCoreState): string
     {
         return match ($pluginCoreState) {
-            State::PENDING   => 'awaiting-payment',
-            State::CONFIRMED => 'processing',
-            State::FULFILL   => 'shipped',
-            State::VOIDED    => 'cancelled',
+            StateEnum::PENDING   => 'awaiting-payment',
+            StateEnum::CONFIRMED => 'processing',
+            StateEnum::FULFILL   => 'shipped',
+            StateEnum::VOIDED    => 'cancelled',
             default => $pluginCoreState->value,
         };
     }

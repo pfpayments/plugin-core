@@ -15,16 +15,15 @@ namespace MyPlugin\ExamplePaymentMethodImplementation;
 error_reporting(E_ALL & ~E_DEPRECATED);
 
 require_once __DIR__ . '/../../../vendor/autoload.php';
-// The following helper classes provide a simplified environment for this example.
-// In a real integration, these would be implemented by the shop system.
-
+// The example requires a logger and settings provider to function. 
+// These helper classes simulate a typical integration environment.
 
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\PaymentMethodGateway;
+use PostFinanceCheckout\PluginCore\Sdk\SdkV2\PaymentMethodGateway;
 use PostFinanceCheckout\PluginCore\Settings\Settings;
 use PostFinanceCheckout\PluginCore\Settings\SettingsProviderInterface;
-use PostFinanceCheckout\PluginCore\Settings\IntegrationMode;
-use PostFinanceCheckout\PluginCore\LineItem\RoundingStrategy;
+use PostFinanceCheckout\PluginCore\Settings\IntegrationMode as IntegrationModeEnum;
+use PostFinanceCheckout\PluginCore\LineItem\RoundingStrategy as RoundingStrategyEnum;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethodService;
 
@@ -105,13 +104,13 @@ class EnvSettingsProvider implements SettingsProviderInterface
     {
         return true;
     }
-    public function getLineItemRoundingStrategy(): ?RoundingStrategy
+    public function getLineItemRoundingStrategy(): ?RoundingStrategyEnum
     {
-        return RoundingStrategy::BY_LINE_ITEM;
+        return RoundingStrategyEnum::BY_LINE_ITEM;
     }
-    public function getIntegrationMode(): IntegrationMode
+    public function getIntegrationMode(): IntegrationModeEnum
     {
-        return IntegrationMode::PAYMENT_PAGE;
+        return IntegrationModeEnum::PAYMENT_PAGE;
     }
     public function getBaseUrl(): ?string
     {
@@ -121,7 +120,7 @@ class EnvSettingsProvider implements SettingsProviderInterface
 
 // --- Main Execution ---
 
-// Credentials setup
+// Load and validate environment-based credentials.
 $spaceId = getenv('PLUGINCORE_DEMO_SPACE_ID');
 $userId = getenv('PLUGINCORE_DEMO_USER_ID');
 $apiSecret = getenv('PLUGINCORE_DEMO_API_SECRET');
@@ -132,7 +131,7 @@ if (!$spaceId || !$userId || !$apiSecret) {
 
 $spaceId = (int)$spaceId;
 
-// Setup services and dependencies
+// Initialize the required service stack.
 $logger = new SimpleLogger();
 $repository = new SimpleRepository();
 $settingsProvider = new EnvSettingsProvider();
@@ -146,6 +145,9 @@ $service = new PaymentMethodService($gateway, $repository, $logger);
 echo "Starting Payment Method Retrieval in Space $spaceId...\n\n";
 
 try {
+    // By default, the gateway excludes 'DELETED' payment methods.
+    // To retrieve all states (including DELETED), one would need to specify it if the gateway supports it, 
+    // but usually, 'null' triggers the default exclusion of DELETED.
     $paymentMethods = $service->getPaymentMethods($spaceId);
 
     echo "Found " . count($paymentMethods) . " payment methods:\n";

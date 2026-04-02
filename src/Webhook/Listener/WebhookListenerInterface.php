@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Webhook\Listener;
 
 use PostFinanceCheckout\PluginCore\Webhook\Command\WebhookCommandInterface;
+use PostFinanceCheckout\PluginCore\Webhook\Enum\WebhookName;
 use PostFinanceCheckout\PluginCore\Webhook\WebhookContext;
 
 /**

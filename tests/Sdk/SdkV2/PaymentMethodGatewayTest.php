@@ -2,23 +2,24 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV2;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethod;
+use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\PaymentMethodGateway;
-use PostFinanceCheckout\Sdk\Model\CreationEntityState;
+use PostFinanceCheckout\PluginCore\Sdk\SdkV2\PaymentMethodGateway;
 use PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration as SdkPaymentMethodConfiguration;
-use PostFinanceCheckout\Sdk\Service\PaymentMethodConfigurationService as SdkPaymentMethodConfigurationService;
+use PostFinanceCheckout\Sdk\Model\CreationEntityState as SdkCreationEntityState;
+use PostFinanceCheckout\Sdk\Service\PaymentMethodConfigurationsService as SdkPaymentMethodConfigurationService;
 
 class PaymentMethodGatewayTest extends TestCase
 {
     private PaymentMethodGateway $gateway;
-    private MockObject|LoggerInterface $logger;
     private MockObject|SdkProvider $sdkProvider;
+    private MockObject|LoggerInterface $logger;
     private MockObject|SdkPaymentMethodConfigurationService $service;
 
     protected function setUp(): void
@@ -42,15 +43,16 @@ class PaymentMethodGatewayTest extends TestCase
         $sdkConfig = new SdkPaymentMethodConfiguration();
         $sdkConfig->setId($id);
         $sdkConfig->setLinkedSpaceId($spaceId);
-        $sdkConfig->setState(CreationEntityState::ACTIVE);
+        $sdkConfig->setState(SdkCreationEntityState::ACTIVE);
         $sdkConfig->setResolvedTitle(['en-US' => 'Credit Card', 'de-DE' => 'Kreditkarte']);
         $sdkConfig->setResolvedDescription(['en-US' => 'Pay significantly later']);
         $sdkConfig->setSortOrder(5);
         $sdkConfig->setResolvedImageUrl('http://image.url');
 
+        // V2: getPaymentMethodConfigurationsId($id, $space)
         $this->service->expects($this->once())
-            ->method('read')
-            ->with($spaceId, $id)
+            ->method('getPaymentMethodConfigurationsId')
+            ->with($id, $spaceId)
             ->willReturn($sdkConfig);
 
         $result = $this->gateway->fetchById($spaceId, $id);
@@ -67,11 +69,11 @@ class PaymentMethodGatewayTest extends TestCase
 
     public function testFetchByIdThrowsExceptionIfNotFound(): void
     {
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Payment method 10 not found.');
+        $this->expectException(TransactionException::class);
+        $this->expectExceptionMessage('Payment method 10 not found: Not found');
 
         $this->service->expects($this->once())
-            ->method('read')
+            ->method('getPaymentMethodConfigurationsId')
             ->willThrowException(new \Exception("Not found"));
 
         $this->gateway->fetchById(1, 10);
@@ -84,13 +86,14 @@ class PaymentMethodGatewayTest extends TestCase
         $sdkConfig1 = new SdkPaymentMethodConfiguration();
         $sdkConfig1->setId(11);
         $sdkConfig1->setLinkedSpaceId($spaceId);
-        $sdkConfig1->setState(CreationEntityState::ACTIVE);
+        $sdkConfig1->setState(SdkCreationEntityState::ACTIVE);
         $sdkConfig1->setResolvedTitle(['en-US' => 'Test Method']);
         $sdkConfig1->setSortOrder(1);
 
+        // V2 Search: getPaymentMethodConfigurationsSearch($space, $expand, $limit, $offset, $order, $query)
         $this->service->expects($this->once())
-            ->method('search')
-            ->with($spaceId, $this->anything()) // Helper specific to PHPUnit mock to match any argument
+            ->method('getPaymentMethodConfigurationsSearch')
+            ->with($spaceId, null, null, null, null, '-state:DELETED')
             ->willReturn([$sdkConfig1]);
 
         $results = $this->gateway->fetchBySpaceId($spaceId);

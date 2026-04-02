@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Sdk\SdkV2;
 
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionComment;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionCommentGatewayInterface;
 use PostFinanceCheckout\Sdk\Model\TransactionComment as SdkTransactionComment;
-use PostFinanceCheckout\Sdk\Service\TransactionCommentService as SdkTransactionCommentService;
+use PostFinanceCheckout\Sdk\Service\TransactionCommentsService as SdkTransactionCommentService;
 
 class TransactionCommentGateway implements TransactionCommentGatewayInterface
 {
@@ -28,10 +28,13 @@ class TransactionCommentGateway implements TransactionCommentGatewayInterface
     public function getComments(int $spaceId, int $transactionId): array
     {
         try {
-            $this->logger->debug("Fetching comments for Transaction $transactionId in Space $spaceId.");
-            $sdkComments = $this->service->all($spaceId, $transactionId);
+            $this->logger->debug("Fetching comments for Transaction $transactionId in Space $spaceId (V2).");
+            // V2: getPaymentTransactionsTransactionIdComments
+            // Arguments: $transaction_id, $space
+            $sdkComments = $this->service->getPaymentTransactionsTransactionIdComments($transactionId, $spaceId);
+            $items = (is_object($sdkComments) && method_exists($sdkComments, 'getData')) ? $sdkComments->getData() : (array)$sdkComments;
 
-            return array_map([$this, 'mapToTransactionComment'], $sdkComments);
+            return array_map([$this, 'mapToTransactionComment'], $items);
         } catch (\Exception $e) {
             $this->logger->error("Failed to fetch transaction comments: " . $e->getMessage());
             return [];

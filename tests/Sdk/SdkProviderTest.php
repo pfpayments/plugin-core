@@ -7,13 +7,14 @@ namespace PostFinanceCheckout\PluginCore\Tests\Sdk;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Settings\Settings;
-use PostFinanceCheckout\Sdk\ApiClient;
-use PostFinanceCheckout\Sdk\Service\TransactionService; // Example service
+use PostFinanceCheckout\Sdk\ApiClient as SdkApiClient;
+use PostFinanceCheckout\Sdk\Configuration as SdkConfiguration;
+use PostFinanceCheckout\Sdk\Service\TransactionsService as SdkTransactionsService; // Example service
 
 class SdkProviderTest extends TestCase
 {
-    private SdkProvider $sdkProvider;
     private Settings $settingsMock;
+    private SdkProvider $sdkProvider;
 
     protected function setUp(): void
     {
@@ -25,29 +26,29 @@ class SdkProviderTest extends TestCase
         $this->sdkProvider = new SdkProvider($this->settingsMock);
     }
 
-    public function testGetServiceCreatesServiceWithCorrectApiClient(): void
+    public function testGetServiceCreatesServiceWithCorrectConfiguration(): void
     {
         // --- Act ---
-        $service = $this->sdkProvider->getService(TransactionService::class);
+        $service = $this->sdkProvider->getService(SdkTransactionsService::class);
 
         // --- Assert ---
-        $this->assertInstanceOf(TransactionService::class, $service);
+        $this->assertInstanceOf(SdkTransactionsService::class, $service);
 
-        // Use reflection to check the private ApiClient property inside the service
-        $reflection = new \ReflectionClass(TransactionService::class);
-        $apiClientProp = $reflection->getProperty('apiClient');
-        $apiClientProp->setAccessible(true);
-        $actualApiClient = $apiClientProp->getValue($service);
+        // Use reflection to check the private config property inside the service
+        $reflection = new \ReflectionClass(SdkTransactionsService::class);
+        $configProp = $reflection->getProperty('config');
+        $configProp->setAccessible(true);
+        $actualConfig = $configProp->getValue($service);
 
-        $this->assertInstanceOf(ApiClient::class, $actualApiClient);
+        $this->assertInstanceOf(SdkConfiguration::class, $actualConfig);
         // We can't directly check the User ID/Key inside the SDK's ApiClient easily,
         // but we've verified it was constructed and passed.
     }
 
     public function testGetServiceReturnsSameInstanceOnSubsequentCalls(): void
     {
-        $service1 = $this->sdkProvider->getService(TransactionService::class);
-        $service2 = $this->sdkProvider->getService(TransactionService::class);
+        $service1 = $this->sdkProvider->getService(SdkTransactionsService::class);
+        $service2 = $this->sdkProvider->getService(SdkTransactionsService::class);
 
         $this->assertSame($service1, $service2);
     }

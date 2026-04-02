@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Settings;
 
 use PostFinanceCheckout\PluginCore\LineItem\RoundingStrategy as RoundingStrategyEnum;
+use PostFinanceCheckout\PluginCore\Settings\IntegrationMode as IntegrationModeEnum;
 
 /**
  * Interface for providing configuration settings needed by plugin-core.
@@ -12,17 +13,14 @@ use PostFinanceCheckout\PluginCore\LineItem\RoundingStrategy as RoundingStrategy
  */
 interface SettingsProviderInterface
 {
+    public function getSpaceId(): ?int;
+    public function getUserId(): ?int;
     public function getApiKey(): ?string;
 
     /**
-     * Returns the API Base URL.
-     * Implementations should return null to use the default PostFinanceCheckout production URL.
-     *
-     * @return string|null
+     * Gets the configured log level (e.g., 'INFO' or 'DEBUG').
      */
-    public function getBaseUrl(): ?string;
-
-    public function getIntegrationMode(): IntegrationMode;
+    public function getLogLevel(): ?string;
 
     /**
      * Should PluginCore automatically add a small adjustment line item
@@ -35,10 +33,13 @@ interface SettingsProviderInterface
      */
     public function getLineItemRoundingStrategy(): ?RoundingStrategyEnum;
 
+    public function getIntegrationMode(): IntegrationModeEnum;
+
     /**
-     * Gets the configured log level (e.g., 'INFO' or 'DEBUG').
+     * Returns the API Base URL.
+     * Implementations should return null to use the default PostFinanceCheckout production URL.
+     *
+     * @return string|null
      */
-    public function getLogLevel(): ?string;
-    public function getSpaceId(): ?int;
-    public function getUserId(): ?int;
+    public function getBaseUrl(): ?string;
 }

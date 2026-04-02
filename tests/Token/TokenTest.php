@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Tests\Token;
 
 use PHPUnit\Framework\TestCase;
-use PostFinanceCheckout\PluginCore\Token\State;
 use PostFinanceCheckout\PluginCore\Token\Token;
+use PostFinanceCheckout\PluginCore\Token\State;
 
 class TokenTest extends TestCase
 {

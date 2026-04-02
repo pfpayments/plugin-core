@@ -2,30 +2,30 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV2;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TransactionCommentGateway;
+use PostFinanceCheckout\PluginCore\Sdk\SdkV2\TransactionCommentGateway;
+use PostFinanceCheckout\Sdk\Service\TransactionCommentsService as SdkTransactionCommentsService;
 use PostFinanceCheckout\Sdk\Model\TransactionComment as SdkTransactionComment;
-use PostFinanceCheckout\Sdk\Service\TransactionCommentService as SdkTransactionCommentService;
 
 class TransactionCommentGatewayTest extends TestCase
 {
     private TransactionCommentGateway $gateway;
-    private MockObject|LoggerInterface $logger;
     private MockObject|SdkProvider $sdkProvider;
-    private MockObject|SdkTransactionCommentService $sdkReferenceService;
+    private MockObject|SdkTransactionCommentsService $sdkReferenceService;
+    private MockObject|LoggerInterface $logger;
 
     protected function setUp(): void
     {
-        $this->sdkReferenceService = $this->createMock(SdkTransactionCommentService::class);
+        $this->sdkReferenceService = $this->createMock(SdkTransactionCommentsService::class);
 
         $this->sdkProvider = $this->createMock(SdkProvider::class);
         $this->sdkProvider->method('getService')
-            ->with(SdkTransactionCommentService::class)
+            ->with(SdkTransactionCommentsService::class)
             ->willReturn($this->sdkReferenceService);
 
         $this->logger = $this->createMock(LoggerInterface::class);
@@ -34,18 +34,6 @@ class TransactionCommentGatewayTest extends TestCase
             $this->sdkProvider,
             $this->logger,
         );
-    }
-
-    public function testGetCommentsHandlesExceptionGracefully(): void
-    {
-        $this->sdkReferenceService->method('all')
-            ->willThrowException(new \Exception("API Error"));
-
-        $this->logger->expects($this->once())->method('error');
-
-        $comments = $this->gateway->getComments(1, 1);
-        $this->assertIsArray($comments);
-        $this->assertEmpty($comments);
     }
 
     public function testGetCommentsMapsCorrectly(): void
@@ -59,9 +47,10 @@ class TransactionCommentGatewayTest extends TestCase
         $sdkComment->setContent('Test Comment');
         $sdkComment->setCreatedOn($now);
 
+        // V2: getPaymentTransactionsTransactionIdComments($transactionId, $spaceId)
         $this->sdkReferenceService->expects($this->once())
-            ->method('all')
-            ->with($spaceId, $transactionId)
+            ->method('getPaymentTransactionsTransactionIdComments')
+            ->with($transactionId, $spaceId)
             ->willReturn([$sdkComment]);
 
         $comments = $this->gateway->getComments($spaceId, $transactionId);
@@ -70,5 +59,17 @@ class TransactionCommentGatewayTest extends TestCase
         $this->assertEquals(999, $comments[0]->id);
         $this->assertEquals('Test Comment', $comments[0]->content);
         $this->assertEquals($now->getTimestamp(), $comments[0]->createdOn->getTimestamp());
+    }
+
+    public function testGetCommentsHandlesExceptionGracefully(): void
+    {
+        $this->sdkReferenceService->method('getPaymentTransactionsTransactionIdComments')
+            ->willThrowException(new \Exception("API Error"));
+
+        $this->logger->expects($this->once())->method('error');
+
+        $comments = $this->gateway->getComments(1, 1);
+        $this->assertIsArray($comments);
+        $this->assertEmpty($comments);
     }
 }

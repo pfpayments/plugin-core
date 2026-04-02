@@ -2,41 +2,46 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV2;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Document\RenderedDocument;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\DocumentGateway;
+use PostFinanceCheckout\PluginCore\Sdk\SdkV2\DocumentGateway;
 use PostFinanceCheckout\Sdk\Model\RenderedDocument as SdkRenderedDocument;
+use PostFinanceCheckout\Sdk\Model\TransactionCompletion as SdkTransactionCompletion;
 use PostFinanceCheckout\Sdk\Model\TransactionInvoice as SdkTransactionInvoice;
-use PostFinanceCheckout\Sdk\Service\RefundService as SdkRefundService;
-use PostFinanceCheckout\Sdk\Service\TransactionInvoiceService as SdkTransactionInvoiceService;
-use PostFinanceCheckout\Sdk\Service\TransactionService as SdkTransactionService;
+use PostFinanceCheckout\Sdk\Service\RefundsService as SdkRefundsService;
+use PostFinanceCheckout\Sdk\Service\TransactionCompletionsService as SdkTransactionCompletionsService;
+use PostFinanceCheckout\Sdk\Service\TransactionInvoicesService as SdkTransactionInvoicesService;
+use PostFinanceCheckout\Sdk\Service\TransactionsService as SdkTransactionsService;
 
 class DocumentGatewayTest extends TestCase
 {
     private DocumentGateway $gateway;
-    private MockObject|SdkTransactionInvoiceService $invoiceService;
-    private MockObject|LoggerInterface $logger;
-    private MockObject|SdkRefundService $refundService;
     private MockObject|SdkProvider $sdkProvider;
-    private MockObject|SdkTransactionService $transactionService;
+    private MockObject|LoggerInterface $logger;
+    private MockObject|SdkTransactionInvoicesService $invoiceService;
+    private MockObject|SdkTransactionsService $transactionService;
+    private MockObject|SdkRefundsService $refundService;
+    private MockObject|SdkTransactionCompletionsService $completionService;
 
     protected function setUp(): void
     {
         $this->sdkProvider = $this->createMock(SdkProvider::class);
         $this->logger = $this->createMock(LoggerInterface::class);
-        $this->invoiceService = $this->createMock(SdkTransactionInvoiceService::class);
-        $this->transactionService = $this->createMock(SdkTransactionService::class);
-        $this->refundService = $this->createMock(SdkRefundService::class);
+        $this->invoiceService = $this->createMock(SdkTransactionInvoicesService::class);
+        $this->transactionService = $this->createMock(SdkTransactionsService::class);
+        $this->refundService = $this->createMock(SdkRefundsService::class);
+        $this->completionService = $this->createMock(SdkTransactionCompletionsService::class);
 
         $this->sdkProvider->method('getService')->willReturnMap([
-            [SdkTransactionInvoiceService::class, $this->invoiceService],
-            [SdkTransactionService::class, $this->transactionService],
-            [SdkRefundService::class, $this->refundService],
+            [SdkTransactionInvoicesService::class, $this->invoiceService],
+            [SdkTransactionsService::class, $this->transactionService],
+            [SdkRefundsService::class, $this->refundService],
+            [SdkTransactionCompletionsService::class, $this->completionService],
         ]);
 
         $this->gateway = new DocumentGateway($this->sdkProvider, $this->logger);
@@ -48,11 +53,22 @@ class DocumentGatewayTest extends TestCase
         $transactionId = 2;
         $invoiceId = 3;
 
+        $sdkCompletion = $this->createMock(SdkTransactionCompletion::class);
+        $sdkCompletion->method('getId')->willReturn(40);
+
+        // 1. Completion Retrieval
+        $this->completionService->expects($this->once())
+            ->method('getPaymentTransactionsCompletionsSearch')
+            ->with($spaceId, null, 1, null, null, "lineItemVersion.transaction.id:$transactionId")
+            ->willReturn([$sdkCompletion]);
+
         $sdkInvoice = new SdkTransactionInvoice();
         $sdkInvoice->setId($invoiceId);
 
+        // 2. Invoice Search: getPaymentTransactionsInvoicesSearch($space, filter, limit, offset, order, query)
         $this->invoiceService->expects($this->once())
-            ->method('search')
+            ->method('getPaymentTransactionsInvoicesSearch')
+            ->with($spaceId, null, 1, null, null, "completion:40")
             ->willReturn([$sdkInvoice]);
 
         $sdkDocument = new SdkRenderedDocument();
@@ -61,8 +77,8 @@ class DocumentGatewayTest extends TestCase
         $sdkDocument->setData(base64_encode('pdf-content'));
 
         $this->invoiceService->expects($this->once())
-            ->method('getInvoiceDocument')
-            ->with($spaceId, $invoiceId)
+            ->method('getPaymentTransactionsInvoicesIdDocument')
+            ->with($invoiceId, $spaceId)
             ->willReturn($sdkDocument);
 
         $result = $this->gateway->getInvoice($spaceId, $transactionId);
@@ -78,8 +94,9 @@ class DocumentGatewayTest extends TestCase
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage("No invoice found for transaction 2");
 
-        $this->invoiceService->expects($this->once())
-            ->method('search')
+        // Fail at completion step
+        $this->completionService->expects($this->once())
+            ->method('getPaymentTransactionsCompletionsSearch')
             ->willReturn([]);
 
         $this->gateway->getInvoice(1, 2);
@@ -95,9 +112,10 @@ class DocumentGatewayTest extends TestCase
         $sdkDocument->setMimeType('application/pdf');
         $sdkDocument->setData(base64_encode('packing-slip-content'));
 
+        // V2: getPaymentTransactionsIdPackingSlipDocument
         $this->transactionService->expects($this->once())
-            ->method('getPackingSlip')
-            ->with($spaceId, $transactionId)
+            ->method('getPaymentTransactionsIdPackingSlipDocument')
+            ->with($transactionId, $spaceId)
             ->willReturn($sdkDocument);
 
         $result = $this->gateway->getPackingSlip($spaceId, $transactionId);
@@ -117,9 +135,10 @@ class DocumentGatewayTest extends TestCase
         $sdkDocument->setMimeType('application/pdf');
         $sdkDocument->setData(base64_encode('credit-note-content'));
 
+        // V2: getPaymentRefundsIdDocument
         $this->refundService->expects($this->once())
-            ->method('getRefundDocument')
-            ->with($spaceId, $refundId)
+            ->method('getPaymentRefundsIdDocument')
+            ->with($refundId, $spaceId)
             ->willReturn($sdkDocument);
 
         $result = $this->gateway->getRefundCreditNote($spaceId, $refundId);

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Tests\Transaction;
 
 use PHPUnit\Framework\TestCase;
-use PostFinanceCheckout\PluginCore\Transaction\State;
 use PostFinanceCheckout\PluginCore\Transaction\Transaction;
+use PostFinanceCheckout\PluginCore\Transaction\State;
 
 class TransactionTest extends TestCase
 {

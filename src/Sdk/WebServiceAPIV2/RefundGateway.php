@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Sdk\SdkV2;
+namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2;
 
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Refund\Refund;

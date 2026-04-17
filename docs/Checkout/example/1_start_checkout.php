@@ -9,7 +9,7 @@ use PostFinanceCheckout\PluginCore\Address\Address;
 use PostFinanceCheckout\PluginCore\LineItem\LineItem;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemConsistencyService;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV2\TransactionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2\TransactionGateway;
 use PostFinanceCheckout\PluginCore\Settings\Settings;
 use PostFinanceCheckout\PluginCore\Tax\Tax;
 use PostFinanceCheckout\PluginCore\Token\TokenizationMode as TokenizationModeEnum;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Sdk\SdkV2;
+namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2;
 
 use PostFinanceCheckout\PluginCore\Address\Address;
 use PostFinanceCheckout\PluginCore\LineItem\LineItem;

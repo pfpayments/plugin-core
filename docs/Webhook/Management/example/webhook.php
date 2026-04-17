@@ -20,8 +20,8 @@ error_reporting(E_ALL & ~E_DEPRECATED);
 require_once __DIR__ . '/../../../examples/Common/bootstrap.php';
 
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV2\WebhookManagementGateway;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV2\WebhookSignatureGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2\WebhookManagementGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2\WebhookSignatureGateway;
 use PostFinanceCheckout\PluginCore\Settings\Settings;
 use PostFinanceCheckout\PluginCore\Webhook\Enum\WebhookListener;
 use PostFinanceCheckout\PluginCore\Transaction\State as TransactionState;

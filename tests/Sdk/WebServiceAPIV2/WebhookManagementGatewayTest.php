@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV2;
+namespace PostFinanceCheckout\PluginCore\Tests\Sdk\WebServiceAPIV2;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV2\WebhookManagementGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2\WebhookManagementGateway;
 use PostFinanceCheckout\PluginCore\Webhook\Enum\WebhookListener as WebhookListenerEnum;
 use PostFinanceCheckout\Sdk\Model\CreationEntityState as SdkCreationEntityState;
 use PostFinanceCheckout\Sdk\Model\WebhookListener as SdkWebhookListener;

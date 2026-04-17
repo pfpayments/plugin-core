@@ -10,8 +10,9 @@ use PostFinanceCheckout\PluginCore\Examples\Common\FilePersistence;
 use PostFinanceCheckout\PluginCore\Examples\Common\TransactionIdLoader;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemConsistencyService;
 use PostFinanceCheckout\PluginCore\Render\IntegratedPaymentRenderService;
+use PostFinanceCheckout\PluginCore\Render\RenderOptions;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV2\TransactionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2\TransactionGateway;
 use PostFinanceCheckout\PluginCore\Settings\Settings;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
 
@@ -64,8 +65,14 @@ try {
     // Get JS URL
     $javascriptUrl = $service->getPaymentUrl((int)$spaceId, $transactionId);
 
-    // Render HTML Block
-    $blockHtml = $renderService->render($javascriptUrl, $method->id, $mode, 'payment-form');
+    // Render HTML Block using custom options.
+    // The rendered script automatically registers the handler in a global registry:
+    //   window.__postfinancecheckoutHandlers[configId]
+    // This allows frontend frameworks (e.g., Alpine.js in Hyvä Checkout) to access
+    // the handler for calling startPayment().
+    $options = new RenderOptions(containerId: 'payment-form');
+    $data = $renderService->getMetadata($javascriptUrl, $method->id, $mode);
+    $blockHtml = $renderService->renderHtml($data, $options);
 
     // Load Host Template & Inject
     $templatePath = __DIR__ . '/resources/integrated_checkout_host.html';

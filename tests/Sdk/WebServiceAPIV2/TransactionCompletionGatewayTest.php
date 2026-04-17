@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV2;
+namespace PostFinanceCheckout\PluginCore\Tests\Sdk\WebServiceAPIV2;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV2\TransactionCompletionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2\TransactionCompletionGateway;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletion;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\State;
 use PostFinanceCheckout\Sdk\Model\TransactionCompletion as SdkTransactionCompletion;

@@ -10,7 +10,7 @@ use PostFinanceCheckout\PluginCore\Examples\Common\FilePersistence;
 use PostFinanceCheckout\PluginCore\Examples\Common\TransactionIdLoader;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemConsistencyService;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV2\TransactionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2\TransactionGateway;
 use PostFinanceCheckout\PluginCore\Settings\Settings;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
 

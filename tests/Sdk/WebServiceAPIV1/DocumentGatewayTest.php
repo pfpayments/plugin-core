@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Tests\Sdk\WebServiceAPIV1;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Document\RenderedDocument;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\DocumentGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\DocumentGateway;
 use PostFinanceCheckout\Sdk\Model\RenderedDocument as SdkRenderedDocument;
 use PostFinanceCheckout\Sdk\Model\TransactionInvoice as SdkTransactionInvoice;
 use PostFinanceCheckout\Sdk\Service\RefundService as SdkRefundService;

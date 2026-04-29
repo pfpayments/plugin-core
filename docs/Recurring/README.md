@@ -25,8 +25,8 @@ If the original transaction does not have a saved token, the service attempts to
  use PostFinanceCheckout\PluginCore\Transaction\RecurringTransactionService;
  use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
  use PostFinanceCheckout\PluginCore\Token\TokenService;
- use PostFinanceCheckout\PluginCore\Sdk\SdkV1\RecurringTransactionGateway;
- use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TokenGateway;
+ use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\RecurringTransactionGateway;
+ use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\TokenGateway;
  
  // 1. Setup Gateways
  $recurringGateway = new RecurringTransactionGateway($sdkProvider, $logger);

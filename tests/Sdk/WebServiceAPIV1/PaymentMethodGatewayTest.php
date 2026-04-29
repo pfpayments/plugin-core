@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Tests\Sdk\WebServiceAPIV1;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethod;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\PaymentMethodGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\PaymentMethodGateway;
 use PostFinanceCheckout\Sdk\Model\CreationEntityState;
 use PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration as SdkPaymentMethodConfiguration;
 use PostFinanceCheckout\Sdk\Service\PaymentMethodConfigurationService as SdkPaymentMethodConfigurationService;

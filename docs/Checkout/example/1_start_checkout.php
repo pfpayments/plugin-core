@@ -6,7 +6,7 @@ use PostFinanceCheckout\PluginCore\Address\Address;
 use PostFinanceCheckout\PluginCore\Examples\Common\FilePersistence;
 use PostFinanceCheckout\PluginCore\LineItem\LineItem;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemConsistencyService;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TransactionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\TransactionGateway;
 use PostFinanceCheckout\PluginCore\Tax\Tax;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionContext;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionService;

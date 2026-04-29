@@ -12,7 +12,7 @@ namespace MyPlugin\ExampleVoidImplementation;
  */
 
 use PostFinanceCheckout\PluginCore\Examples\Common\TransactionIdLoader;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TransactionCompletionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\TransactionCompletionGateway;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletionService;
 
 error_reporting(E_ALL & ~E_DEPRECATED);

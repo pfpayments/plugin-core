@@ -18,9 +18,9 @@ use PostFinanceCheckout\PluginCore\Document\DocumentService;
 use PostFinanceCheckout\PluginCore\Examples\Common\TransactionIdLoader;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemConsistencyService;
 use PostFinanceCheckout\PluginCore\Refund\RefundService;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\DocumentGateway;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\RefundGateway;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TransactionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\DocumentGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\RefundGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\TransactionGateway;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
 
 error_reporting(E_ALL & ~E_DEPRECATED);

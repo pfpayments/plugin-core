@@ -5,7 +5,7 @@ namespace MyPlugin\ExampleCheckoutImplementation;
 use PostFinanceCheckout\PluginCore\Examples\Common\FilePersistence;
 use PostFinanceCheckout\PluginCore\Examples\Common\TransactionIdLoader;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemConsistencyService;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TransactionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\TransactionGateway;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
 
 error_reporting(E_ALL & ~E_DEPRECATED);

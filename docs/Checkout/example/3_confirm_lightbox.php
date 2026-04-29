@@ -6,7 +6,8 @@ use PostFinanceCheckout\PluginCore\Examples\Common\FilePersistence;
 use PostFinanceCheckout\PluginCore\Examples\Common\TransactionIdLoader;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemConsistencyService;
 use PostFinanceCheckout\PluginCore\Render\IntegratedPaymentRenderService;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TransactionGateway;
+use PostFinanceCheckout\PluginCore\Render\RenderOptions;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\TransactionGateway;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
 
 error_reporting(E_ALL & ~E_DEPRECATED);
@@ -58,7 +59,11 @@ try {
     $javascriptUrl = $service->getPaymentUrl((int)$spaceId, $transactionId);
 
     // Render HTML Block
-    $blockHtml = $renderService->render($javascriptUrl, $method->id, $mode, 'payment-form');
+    // The rendered block registers the handler in window.__postfinancecheckoutHandlers[configId],
+    // so frontend frameworks (e.g. Alpine.js) can access handler.startPayment()
+    // from outside the inline script.
+    $data = $renderService->getMetadata($javascriptUrl, $method->id, $mode);
+    $blockHtml = $renderService->renderHtml($data, new RenderOptions(containerId: 'payment-form'));
 
     // Load Host Template & Inject
     $templatePath = __DIR__ . '/resources/integrated_checkout_host.html';

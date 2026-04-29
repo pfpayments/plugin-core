@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1;
 
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\State as StateEnum;

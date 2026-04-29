@@ -13,9 +13,9 @@ namespace MyPlugin\ExampleRecurringImplementation;
 
 use PostFinanceCheckout\PluginCore\Examples\Common\TransactionIdLoader;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemConsistencyService;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\RecurringTransactionGateway;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TokenGateway;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TransactionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\RecurringTransactionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\TokenGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\TransactionGateway;
 use PostFinanceCheckout\PluginCore\Token\TokenService;
 use PostFinanceCheckout\PluginCore\Transaction\RecurringTransactionService;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionService;

@@ -20,8 +20,8 @@ use PostFinanceCheckout\PluginCore\Refund\context\RefundContext as ContextRefund
 use PostFinanceCheckout\PluginCore\Refund\RefundContext;
 use PostFinanceCheckout\PluginCore\Refund\RefundService;
 use PostFinanceCheckout\PluginCore\Refund\Type;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\RefundGateway;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TransactionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\RefundGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\TransactionGateway;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
 use PostFinanceCheckout\PluginCore\Refund\Exception\InvalidRefundException;
 
@@ -152,7 +152,7 @@ if ($targetItem) {
                 'quantity' => 0, // 0 quantity usually means "do not return stock" or simple reduction?
                 // Original script used 0. 
                 // "Refund 20.00 from the Swiss Watch ... without returning the item (qty 0)."
-                'amount' => $unitReduction // SdkV1 usually expects unit reduction amount here if type relies on it? 
+                'amount' => $unitReduction // WebServiceAPIV1 usually expects unit reduction amount here if type relies on it? 
                 // Original: "10.00 * 2 items = 20.00 Total Refund". So this is unit amount.
             ]
         ]

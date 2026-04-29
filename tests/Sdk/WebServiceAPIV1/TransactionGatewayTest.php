@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Tests\Sdk\WebServiceAPIV1;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -11,7 +11,7 @@ use PostFinanceCheckout\PluginCore\Address\Address;
 use PostFinanceCheckout\PluginCore\LineItem\LineItem;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TransactionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\TransactionGateway;
 use PostFinanceCheckout\PluginCore\Settings\IntegrationMode;
 use PostFinanceCheckout\PluginCore\Settings\Settings;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionContext;

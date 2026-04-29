@@ -63,7 +63,7 @@ Inject the necessary dependencies. In a real application, use your Dependency In
 use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
 use PostFinanceCheckout\PluginCore\Settings\Settings;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TransactionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\TransactionGateway;
 // ... other imports
 
 // 1. Setup SDK

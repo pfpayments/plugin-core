@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Tests\Sdk\WebServiceAPIV1;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\RecurringTransactionGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\RecurringTransactionGateway;
 use PostFinanceCheckout\PluginCore\Transaction\State;
 use PostFinanceCheckout\PluginCore\Transaction\Transaction;
 use PostFinanceCheckout\Sdk\Model\Transaction as SdkTransaction;

@@ -16,8 +16,8 @@ namespace MyPlugin\ExampleWebhookImplementation;
  * php webhook.php
  */
 
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\WebhookManagementGateway;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\WebhookSignatureGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\WebhookManagementGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\WebhookSignatureGateway;
 use PostFinanceCheckout\PluginCore\Transaction\State as TransactionState;
 use PostFinanceCheckout\PluginCore\Webhook\Enum\WebhookListener;
 use PostFinanceCheckout\PluginCore\Webhook\WebhookConfig;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1;
 
 use PostFinanceCheckout\PluginCore\Document\DocumentGatewayInterface;
 use PostFinanceCheckout\PluginCore\Document\RenderedDocument;

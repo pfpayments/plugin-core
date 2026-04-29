@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1;
 
 use Psr\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;

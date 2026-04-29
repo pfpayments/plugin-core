@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Tests\Sdk\WebServiceAPIV1;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -11,7 +11,7 @@ use PostFinanceCheckout\PluginCore\Refund\Refund;
 use PostFinanceCheckout\PluginCore\Refund\RefundContext;
 use PostFinanceCheckout\PluginCore\Refund\Type as RefundType;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\RefundGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\RefundGateway;
 use PostFinanceCheckout\PluginCore\Transaction\Transaction;
 use PostFinanceCheckout\Sdk\Model\Refund as SdkRefund;
 use PostFinanceCheckout\Sdk\Model\RefundCreate as SdkRefundCreate;

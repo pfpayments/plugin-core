@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Tests\Sdk\SdkV1;
+namespace PostFinanceCheckout\PluginCore\Tests\Sdk\WebServiceAPIV1;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SdkV1\TokenGateway;
+use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\TokenGateway;
 use PostFinanceCheckout\PluginCore\Token\Token;
 use PostFinanceCheckout\Sdk\Model\CreationEntityState;
 use PostFinanceCheckout\Sdk\Model\Token as SdkToken;

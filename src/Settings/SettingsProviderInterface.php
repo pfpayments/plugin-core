@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Settings;
 
-use PostFinanceCheckout\PluginCore\LineItem\RoundingStrategy as RoundingStrategyEnum;
-use PostFinanceCheckout\PluginCore\Settings\IntegrationMode as IntegrationModeEnum;
+use PostFinanceCheckout\PluginCore\LineItem\RoundingStrategy;
+use PostFinanceCheckout\PluginCore\Settings\IntegrationMode;
 
 /**
  * Interface for providing configuration settings needed by plugin-core.
@@ -31,9 +31,9 @@ interface SettingsProviderInterface
     /**
      * The rounding strategy code (e.g., 'BY_LINE_ITEM' or 'BY_TOTAL').
      */
-    public function getLineItemRoundingStrategy(): ?RoundingStrategyEnum;
+    public function getLineItemRoundingStrategy(): ?RoundingStrategy;
 
-    public function getIntegrationMode(): IntegrationModeEnum;
+    public function getIntegrationMode(): IntegrationMode;
 
     /**
      * Returns the API Base URL.

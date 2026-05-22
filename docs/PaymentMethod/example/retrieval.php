@@ -18,16 +18,15 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 // The example requires a logger and settings provider to function. 
 // These helper classes simulate a typical integration environment.
 
+use PostFinanceCheckout\PluginCore\LineItem\RoundingStrategy;
+use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
+use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethodRepositoryInterface;
+use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethodService;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2\PaymentMethodGateway;
+use PostFinanceCheckout\PluginCore\Settings\IntegrationMode;
 use PostFinanceCheckout\PluginCore\Settings\Settings;
 use PostFinanceCheckout\PluginCore\Settings\SettingsProviderInterface;
-use PostFinanceCheckout\PluginCore\Settings\IntegrationMode as IntegrationModeEnum;
-use PostFinanceCheckout\PluginCore\LineItem\RoundingStrategy as RoundingStrategyEnum;
-use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
-use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethodService;
-
-use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethodRepositoryInterface;
 
 // --- Helper Classes (Simulating the environment) ---
 
@@ -72,7 +71,10 @@ class SimpleLogger implements LoggerInterface
     public function debug(string|\Stringable $message, array $context = []): void
     { /* echo "[DEBUG] $message\n"; */
     }
-    public function log($level, string|\Stringable $message, array $context = []): void
+    /**
+     * Standard implementation of PSR-3 log method with mixed level type.
+     */
+    public function log(mixed $level, string|\Stringable $message, array $context = [],): void
     {
         echo "[$level] $message\n";
     }
@@ -104,13 +106,13 @@ class EnvSettingsProvider implements SettingsProviderInterface
     {
         return true;
     }
-    public function getLineItemRoundingStrategy(): ?RoundingStrategyEnum
+    public function getLineItemRoundingStrategy(): ?RoundingStrategy
     {
-        return RoundingStrategyEnum::BY_LINE_ITEM;
+        return RoundingStrategy::BY_LINE_ITEM;
     }
-    public function getIntegrationMode(): IntegrationModeEnum
+    public function getIntegrationMode(): IntegrationMode
     {
-        return IntegrationModeEnum::PAYMENT_PAGE;
+        return IntegrationMode::PAYMENT_PAGE;
     }
     public function getBaseUrl(): ?string
     {

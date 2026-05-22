@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\LineItem\Exception\LineItemConsistencyException;
 use PostFinanceCheckout\PluginCore\LineItem\LineItem;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemConsistencyService;
-use PostFinanceCheckout\PluginCore\LineItem\RoundingStrategy as RoundingStrategyEnum;
+use PostFinanceCheckout\PluginCore\LineItem\RoundingStrategy;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Settings\Settings;
 use PostFinanceCheckout\PluginCore\Settings\SettingsProviderInterface;
@@ -17,7 +17,7 @@ class LineItemConsistencyServiceTest extends TestCase
 {
     private function createService(
         bool $enabled = true,
-        RoundingStrategyEnum $strategy = RoundingStrategyEnum::BY_LINE_ITEM,
+        RoundingStrategy $strategy = RoundingStrategy::BY_LINE_ITEM,
     ): LineItemConsistencyService {
         $provider = $this->createMock(SettingsProviderInterface::class);
         $provider->method('getLineItemConsistencyEnabled')->willReturn($enabled);

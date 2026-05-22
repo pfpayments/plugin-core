@@ -2,27 +2,35 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Tests\Webhook;
+namespace PostFinanceCheckout\PluginCore\Tests\State;
 
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PostFinanceCheckout\PluginCore\Transaction\State as PluginCoreTransactionState;
-use PostFinanceCheckout\Sdk\Model\TransactionState as SdkTransactionState;
-use PostFinanceCheckout\PluginCore\Refund\State as PluginCoreRefundState;
-use PostFinanceCheckout\Sdk\Model\RefundState as SdkRefundState;
-use PostFinanceCheckout\PluginCore\Token\Version\State as PluginCoreTokenVersionState;
-use PostFinanceCheckout\Sdk\Model\TokenVersionState as SdkTokenVersionState;
+use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\DeliveryIndication\State as PluginCoreDeliveryIndicationState;
-use PostFinanceCheckout\Sdk\Model\DeliveryIndicationState as SdkDeliveryIndicationState;
 use PostFinanceCheckout\PluginCore\ManualTask\State as PluginCoreManualTaskState;
-use PostFinanceCheckout\Sdk\Model\ManualTaskState as SdkManualTaskState;
+use PostFinanceCheckout\PluginCore\PaymentMethod\State as PluginCorePaymentMethodState;
+use PostFinanceCheckout\PluginCore\Refund\State as PluginCoreRefundState;
+use PostFinanceCheckout\PluginCore\Token\Version\State as PluginCoreTokenVersionState;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\State as PluginCoreTransactionCompletionState;
-use PostFinanceCheckout\Sdk\Model\TransactionCompletionState as SdkTransactionCompletionState;
 use PostFinanceCheckout\PluginCore\Transaction\Invoice\State as PluginCoreTransactionInvoiceState;
-use PostFinanceCheckout\Sdk\Model\TransactionInvoiceState as SdkTransactionInvoiceState;
-use PostFinanceCheckout\Sdk\Model\TransactionVoidState as SdkTransactionVoidState;
+use PostFinanceCheckout\PluginCore\Transaction\State as PluginCoreTransactionState;
 use PostFinanceCheckout\PluginCore\Transaction\Void\State as PluginCoreTransactionVoidState;
+use PostFinanceCheckout\Sdk\Model\CreationEntityState as SdkCreationEntityState;
+use PostFinanceCheckout\Sdk\Model\DeliveryIndicationState as SdkDeliveryIndicationState;
+use PostFinanceCheckout\Sdk\Model\ManualTaskState as SdkManualTaskState;
+use PostFinanceCheckout\Sdk\Model\RefundState as SdkRefundState;
+use PostFinanceCheckout\Sdk\Model\TokenVersionState as SdkTokenVersionState;
+use PostFinanceCheckout\Sdk\Model\TransactionCompletionState as SdkTransactionCompletionState;
+use PostFinanceCheckout\Sdk\Model\TransactionInvoiceState as SdkTransactionInvoiceState;
+use PostFinanceCheckout\Sdk\Model\TransactionState as SdkTransactionState;
+use PostFinanceCheckout\Sdk\Model\TransactionVoidState as SdkTransactionVoidState;
 
+/**
+ * Contract test that guarantees PluginCore's internal enums stay in sync with the SDK.
+ *
+ * If the SDK introduces a new state that our enums don't cover, this test will
+ * fail immediately — preventing silent mapping bugs at runtime.
+ */
 class StateSynchronizationTest extends TestCase
 {
     /**
@@ -35,13 +43,17 @@ class StateSynchronizationTest extends TestCase
                 SdkDeliveryIndicationState::class,
                 PluginCoreDeliveryIndicationState::class,
             ],
-            'Refund States' => [
-                SdkRefundState::class,
-                PluginCoreRefundState::class,
-            ],
             'Manual Task States' => [
                 SdkManualTaskState::class,
                 PluginCoreManualTaskState::class,
+            ],
+            'Payment Method States' => [
+                SdkCreationEntityState::class,
+                PluginCorePaymentMethodState::class,
+            ],
+            'Refund States' => [
+                SdkRefundState::class,
+                PluginCoreRefundState::class,
             ],
             'Token Version States' => [
                 SdkTokenVersionState::class,
@@ -66,10 +78,6 @@ class StateSynchronizationTest extends TestCase
         ];
     }
 
-    /**
-     * @param class-string $sdkStateClass
-     * @param class-string $internalEnumClass
-     */
     #[DataProvider('stateMappingProvider')]
     public function testInternalEnumCoversAllSdkStates(string $sdkStateClass, string $internalEnumClass): void
     {

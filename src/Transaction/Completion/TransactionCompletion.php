@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Transaction\Completion;
 
 use PostFinanceCheckout\PluginCore\LineItem\LineItem;
+use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Render\JsonStringableTrait;
 
 /**
@@ -15,6 +16,11 @@ use PostFinanceCheckout\PluginCore\Render\JsonStringableTrait;
 class TransactionCompletion
 {
     use JsonStringableTrait;
+
+    /**
+     * @var LocalizedString|null The localized failure reason from the API.
+     */
+    public ?LocalizedString $failureReason = null;
 
     /**
      * @var int The completion ID.

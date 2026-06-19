@@ -4,17 +4,34 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1;
 
+use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
+use PostFinanceCheckout\PluginCore\Sdk\DateTimeMapperTrait;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
+use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionCommentException;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionComment;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionCommentGatewayInterface;
 use PostFinanceCheckout\Sdk\Model\TransactionComment as SdkTransactionComment;
 use PostFinanceCheckout\Sdk\Service\TransactionCommentService as SdkTransactionCommentService;
 
+/**
+ * Gateway for retrieving transaction comments.
+ */
 class TransactionCommentGateway implements TransactionCommentGatewayInterface
 {
+    use DateTimeMapperTrait;
+
+    /**
+     * @var SdkTransactionCommentService
+     */
     private SdkTransactionCommentService $service;
 
+    /**
+     * TransactionCommentGateway constructor.
+     *
+     * @param SdkProvider $sdkProvider
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         private readonly SdkProvider $sdkProvider,
         private readonly LoggerInterface $logger,
@@ -28,26 +45,47 @@ class TransactionCommentGateway implements TransactionCommentGatewayInterface
     public function getComments(int $spaceId, int $transactionId): array
     {
         try {
-            $this->logger->debug("Fetching comments for Transaction $transactionId in Space $spaceId.");
+            $this->logger->debug(
+                'Fetching comments for Transaction {transactionId} in Space {spaceId}.',
+                [
+                    'spaceId' => $spaceId,
+                    'transactionId' => $transactionId,
+                ],
+            );
             $sdkComments = $this->service->all($spaceId, $transactionId);
 
             return array_map([$this, 'mapToTransactionComment'], $sdkComments);
         } catch (\Exception $e) {
-            $this->logger->error("Failed to fetch transaction comments: " . $e->getMessage());
-            return [];
+            $this->logger->error(
+                'Failed to fetch transaction comments: {errorMessage}',
+                [
+                    'errorMessage' => $e->getMessage(),
+                    'exception' => $e,
+                    'spaceId' => $spaceId,
+                    'transactionId' => $transactionId,
+                ],
+            );
+            throw new TransactionCommentException(
+                "Failed to fetch comments for transaction {$transactionId}: " . $e->getMessage(),
+                new LocalizedString($e->getMessage()),
+                0,
+                $e,
+            );
         }
     }
 
+    /**
+     * Maps SDK TransactionComment to Domain object.
+     *
+     * @param SdkTransactionComment $sdkComment
+     * @return TransactionComment
+     */
     private function mapToTransactionComment(SdkTransactionComment $sdkComment): TransactionComment
     {
         $comment = new TransactionComment();
         $comment->id = $sdkComment->getId();
         $comment->content = $sdkComment->getContent();
-
-        $createdOn = $sdkComment->getCreatedOn();
-        if ($createdOn) {
-            $comment->createdOn = \DateTimeImmutable::createFromMutable($createdOn);
-        }
+        $comment->createdOn = $this->toDateTimeImmutable($sdkComment->getCreatedOn());
 
         return $comment;
     }

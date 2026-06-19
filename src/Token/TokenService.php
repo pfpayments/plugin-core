@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Token;
 
 use Psr\Log\LoggerInterface;
+use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
+use PostFinanceCheckout\PluginCore\Token\Exception\TokenException;
 use PostFinanceCheckout\Sdk\ApiException;
 
 /**
@@ -23,7 +25,8 @@ class TokenService
      *
      * @param int $spaceId
      * @param int $transactionId
-     * @return Token|null The created token or null if creation failed.
+     * @return Token The created token.
+     * @throws TokenException If token creation fails at the API or transport level.
      */
     public function createTokenForTransaction(int $spaceId, int $transactionId): ?Token
     {
@@ -34,10 +37,20 @@ class TokenService
             return $token;
         } catch (ApiException $e) {
             $this->logger->error("Failed to create token for Transaction $transactionId: " . $e->getMessage());
+            throw new TokenException(
+                "Failed to create token for Transaction $transactionId: " . $e->getMessage(),
+                new LocalizedString($e->getMessage()),
+                0,
+                $e,
+            );
         } catch (\Exception $e) {
             $this->logger->error("Unexpected error creating token for Transaction $transactionId: " . $e->getMessage());
+            throw new TokenException(
+                "Unexpected error creating token for Transaction $transactionId: " . $e->getMessage(),
+                new LocalizedString($e->getMessage()),
+                0,
+                $e,
+            );
         }
-
-        return null;
     }
 }

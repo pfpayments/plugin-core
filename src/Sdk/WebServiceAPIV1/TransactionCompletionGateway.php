@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1;
 
+use PostFinanceCheckout\PluginCore\Sdk\FailureReasonMapperTrait;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\State as StateEnum;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletion;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletionGatewayInterface;
+use PostFinanceCheckout\PluginCore\Transaction\Void\State as VoidStateEnum;
+use PostFinanceCheckout\PluginCore\Transaction\Void\TransactionVoid;
 use PostFinanceCheckout\Sdk\Model\TransactionCompletion as SdkTransactionCompletion;
 use PostFinanceCheckout\Sdk\Service\TransactionCompletionService as SdkTransactionCompletionService;
 use PostFinanceCheckout\Sdk\Service\TransactionVoidService as SdkTransactionVoidService;
@@ -20,6 +23,8 @@ use PostFinanceCheckout\Sdk\Service\TransactionVoidService as SdkTransactionVoid
  */
 class TransactionCompletionGateway implements TransactionCompletionGatewayInterface
 {
+    use FailureReasonMapperTrait;
+
     public function __construct(
         private readonly SdkProvider $sdkProvider,
     ) {
@@ -60,6 +65,11 @@ class TransactionCompletionGateway implements TransactionCompletionGatewayInterf
         $completion->linkedTransactionId = $sdkCompletion->getLinkedTransaction();
         $completion->state = StateEnum::from($sdkCompletion->getState());
 
+        $reason = $sdkCompletion->getFailureReason();
+        if ($reason !== null) {
+            $completion->failureReason = $this->mapSdkFailureReason($reason);
+        }
+
         if ($sdkCompletion->getLineItems()) {
             $completion->lineItems = array_map(function ($sdkItem) {
                 $item = new \PostFinanceCheckout\PluginCore\LineItem\LineItem();
@@ -85,15 +95,23 @@ class TransactionCompletionGateway implements TransactionCompletionGatewayInterf
      *
      * @param int $spaceId The space ID.
      * @param int $transactionId The transaction ID to void.
-     * @return string The state of the void operation.
+     * @return TransactionVoid The resulting void domain object.
      */
-    public function void(int $spaceId, int $transactionId): string
+    public function void(int $spaceId, int $transactionId): TransactionVoid
     {
         /** @var SdkTransactionVoidService $service */
         $service = $this->sdkProvider->getService(SdkTransactionVoidService::class);
 
-        $void = $service->voidOnline($spaceId, $transactionId);
+        $sdkVoid = $service->voidOnline($spaceId, $transactionId);
 
-        return (string)$void->getState();
+        $void = new TransactionVoid();
+        $void->state = VoidStateEnum::from((string)$sdkVoid->getState());
+
+        $reason = $sdkVoid->getFailureReason();
+        if ($reason !== null) {
+            $void->failureReason = $this->mapSdkFailureReason($reason);
+        }
+
+        return $void;
     }
 }

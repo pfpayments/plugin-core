@@ -12,6 +12,8 @@ use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletion;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletionGatewayInterface;
 use PostFinanceCheckout\PluginCore\Transaction\Completion\TransactionCompletionService;
 use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
+use PostFinanceCheckout\PluginCore\Transaction\Void\State as VoidState;
+use PostFinanceCheckout\PluginCore\Transaction\Void\TransactionVoid;
 
 class TransactionCompletionServiceTest extends TestCase
 {
@@ -67,14 +69,16 @@ class TransactionCompletionServiceTest extends TestCase
     {
         $spaceId = 1;
         $transactionId = 123;
-        $state = 'SUCCESSFUL';
+        $void = new TransactionVoid();
+        $void->state = VoidState::SUCCESSFUL;
 
         $this->gateway->expects($this->once())
             ->method('void')
             ->with($spaceId, $transactionId)
-            ->willReturn($state);
+            ->willReturn($void);
 
         $result = $this->service->void($spaceId, $transactionId);
-        $this->assertSame($state, $result);
+        $this->assertSame($void, $result);
+        $this->assertSame(VoidState::SUCCESSFUL, $result->state);
     }
 }

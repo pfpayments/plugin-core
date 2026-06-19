@@ -6,81 +6,98 @@ namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2;
 
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Token\State as StateEnum;
+use PostFinanceCheckout\PluginCore\Sdk\TokenMapperTrait;
+use PostFinanceCheckout\PluginCore\Token\Exception\MissingTokenException;
+use PostFinanceCheckout\PluginCore\Token\Exception\TokenException;
 use PostFinanceCheckout\PluginCore\Token\Token;
 use PostFinanceCheckout\PluginCore\Token\TokenGatewayInterface;
 use PostFinanceCheckout\Sdk\Model\Token as SdkToken;
 use PostFinanceCheckout\Sdk\Service\TransactionsService as SdkTransactionsService;
-use PostFinanceCheckout\Sdk\Service\TokensService as SdkTokensService;
-use PostFinanceCheckout\Sdk\Model\TokenCreate as SdkTokenCreate;
 
+/**
+ * SDK implementation of the TokenGatewayInterface for API V2.
+ */
 class TokenGateway implements TokenGatewayInterface
 {
-    private SdkTransactionsService $transactionsService;
-    private SdkTokensService $tokensService;
+    use TokenMapperTrait;
 
+    /**
+     * @var SdkTransactionsService
+     */
+    private SdkTransactionsService $transactionsService;
+
+    /**
+     * Constructs the TokenGateway instance.
+     *
+     * @param SdkProvider $sdkProvider
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         private readonly SdkProvider $sdkProvider,
         private readonly LoggerInterface $logger,
     ) {
         $this->transactionsService = $this->sdkProvider->getService(SdkTransactionsService::class);
-        $this->tokensService = $this->sdkProvider->getService(SdkTokensService::class);
     }
 
+    /**
+     * Attempts to retrieve or map a token for a given transaction.
+     *
+     * Enforces fail-fast behavior: if the transaction does not have an associated token,
+     * it throws MissingTokenException.
+     *
+     * @param int $spaceId
+     * @param int $transactionId
+     * @return Token
+     * @throws MissingTokenException
+     * @throws TokenException
+     */
     public function createToken(int $spaceId, int $transactionId): Token
     {
-        $this->logger->debug("Creating/Fetching Token for Transaction $transactionId in Space $spaceId (V2).");
-
-        // V2 Migration Note: Explicit 'createToken' from transaction service is not directly available or required.
-        // Tokens are usually created during transaction processing if 'tokenizationMode' was set.
-        // We will fetch the transaction and return the token attached to it.
-        // If the token is not present, it might mean tokenization failed or was not requested.
+        $this->logger->debug(
+            'Creating/Fetching Token for Transaction {transactionId} in Space {spaceId} (V2).',
+            [
+                'spaceId' => $spaceId,
+                'transactionId' => $transactionId,
+            ],
+        );
 
         try {
-            // Fetch transaction with token expanded
             $transaction = $this->transactionsService->getPaymentTransactionsId($transactionId, $spaceId, ['token']);
             $sdkToken = $transaction->getToken();
 
-            if (!$sdkToken) {
-                $this->logger->debug("Token not found on transaction $transactionId. Attempting to create a new token.");
-
-                $tokenCreate = new SdkTokenCreate();
-                $tokenCreate->setExternalId(uniqid((string)$transactionId . '_'));
-                $tokenCreate->setCustomerId($transaction->getCustomerId());
-                $tokenCreate->setTokenReference($transaction->getCustomerId()); // Use customer ID as reference
-
-                if ($transaction->getCustomerEmailAddress()) {
-                    $tokenCreate->setCustomerEmailAddress($transaction->getCustomerEmailAddress());
-                }
-
-                // Attempt to create token
-                $sdkToken = $this->tokensService->postPaymentTokens($spaceId, $tokenCreate);
-                $this->logger->debug("Successfully created new token with ID: " . $sdkToken->getId());
+            if ($sdkToken === null) {
+                $this->logger->error(
+                    'Token creation failed: Transaction does not have an associated token. The original transaction must have been created with tokenizationMode = FORCE_CREATION.',
+                    [
+                        'spaceId' => $spaceId,
+                        'transactionId' => $transactionId,
+                    ],
+                );
+                throw new MissingTokenException(
+                    "Transaction {$transactionId} in Space {$spaceId} has no associated token.",
+                );
             }
 
-            return $this->mapToDomain($sdkToken, $spaceId);
+            return $this->mapToToken($sdkToken, $spaceId);
         } catch (\Exception $e) {
-            $this->logger->error("Failed to fetch or create token for transaction $transactionId: " . $e->getMessage());
+            if (!($e instanceof MissingTokenException)) {
+                $this->logger->error(
+                    'Failed to fetch token for transaction: {errorMessage}',
+                    [
+                        'errorMessage' => $e->getMessage(),
+                        'exception' => $e,
+                        'spaceId' => $spaceId,
+                        'transactionId' => $transactionId,
+                    ],
+                );
+                throw new TokenException(
+                    "Failed to fetch token for transaction {$transactionId}: " . $e->getMessage(),
+                    null,
+                    0,
+                    $e,
+                );
+            }
             throw $e;
         }
-    }
-
-    private function mapToDomain(SdkToken $sdkToken, int $spaceId): Token
-    {
-        $token = new Token();
-        $token->id = $sdkToken->getId();
-        $token->spaceId = $sdkToken->getLinkedSpaceId() ?? $spaceId;
-        $token->version = $sdkToken->getVersion();
-
-        $token->state = match ((string)$sdkToken->getState()) {
-            'ACTIVE' => StateEnum::ACTIVE,
-            'CREATE' => StateEnum::CREATE,
-            'DELETED' => StateEnum::DELETED,
-            'DELETING' => StateEnum::DELETING,
-            'INACTIVE' => StateEnum::INACTIVE,
-            default => StateEnum::ACTIVE,
-        };
-
-        return $token;
     }
 }

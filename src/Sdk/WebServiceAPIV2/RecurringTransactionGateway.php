@@ -6,11 +6,9 @@ namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2;
 
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
+use PostFinanceCheckout\PluginCore\Sdk\TransactionMapperTrait;
 use PostFinanceCheckout\PluginCore\Transaction\RecurringTransactionGatewayInterface;
-use PostFinanceCheckout\PluginCore\Transaction\State as StateEnum;
 use PostFinanceCheckout\PluginCore\Transaction\Transaction;
-use PostFinanceCheckout\Sdk\Model\Charge as SdkCharge;
-use PostFinanceCheckout\Sdk\Model\Transaction as SdkTransaction;
 use PostFinanceCheckout\Sdk\Service\TransactionsService as SdkTransactionsService;
 
 /**
@@ -21,6 +19,8 @@ use PostFinanceCheckout\Sdk\Service\TransactionsService as SdkTransactionsServic
  */
 class RecurringTransactionGateway implements RecurringTransactionGatewayInterface
 {
+    use TransactionMapperTrait;
+
     /**
      * @var SdkTransactionsService The SDK transaction service.
      */
@@ -78,35 +78,5 @@ class RecurringTransactionGateway implements RecurringTransactionGatewayInterfac
             $this->logger->error("Failed to process recurring payment for Transaction $transactionId: " . $e->getMessage());
             throw $e;
         }
-    }
-
-    /**
-     * Maps an SDK Transaction to a domain Transaction.
-     *
-     * @param SdkTransaction $sdkTransaction The SDK transaction.
-     * @return Transaction The domain transaction.
-     */
-    private function mapToTransaction(SdkTransaction $sdkTransaction): Transaction
-    {
-        $domain = new Transaction();
-        $domain->id = $sdkTransaction->getId();
-        $domain->spaceId = $sdkTransaction->getLinkedSpaceId();
-        $domain->version = $sdkTransaction->getVersion();
-
-        // Map State (String -> Enum)
-        $domain->state = match ((string) $sdkTransaction->getState()) {
-            'PENDING' => StateEnum::PENDING,
-            'CONFIRMED' => StateEnum::CONFIRMED,
-            'PROCESSING' => StateEnum::PROCESSING,
-            'FAILED' => StateEnum::FAILED,
-            'AUTHORIZED' => StateEnum::AUTHORIZED,
-            'VOIDED' => StateEnum::VOIDED,
-            'COMPLETED' => StateEnum::COMPLETED,
-            'FULFILL' => StateEnum::FULFILL,
-            'DECLINE' => StateEnum::DECLINE,
-            default => StateEnum::PENDING,
-        };
-
-        return $domain;
     }
 }

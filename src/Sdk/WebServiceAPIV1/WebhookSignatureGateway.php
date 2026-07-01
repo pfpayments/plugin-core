@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1;
 
+use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Webhook\Exception\WebhookSignatureValidationException;
@@ -58,8 +59,7 @@ class WebhookSignatureGateway implements WebhookSignatureGatewayInterface
             );
             throw new WebhookSignatureValidationException(
                 "Webhook signature validation failed: " . $e->getMessage(),
-                null,
-                0,
+                new LocalizedString("Webhook signature validation failed."),
                 $e,
             );
         }

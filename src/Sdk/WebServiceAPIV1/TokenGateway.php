@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1;
 
+use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Sdk\TokenMapperTrait;
@@ -73,6 +74,7 @@ class TokenGateway implements TokenGatewayInterface
                 );
                 throw new MissingTokenException(
                     "Transaction {$transactionId} in Space {$spaceId} has no associated token.",
+                    new LocalizedString('The transaction has no associated token.'),
                 );
             }
 
@@ -90,8 +92,7 @@ class TokenGateway implements TokenGatewayInterface
                 );
                 throw new TokenException(
                     "Failed to create token for transaction {$transactionId}: " . $e->getMessage(),
-                    null,
-                    0,
+                    new LocalizedString('Token creation failed. Please try again or contact support.'),
                     $e,
                 );
             }

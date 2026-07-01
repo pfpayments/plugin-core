@@ -7,6 +7,7 @@ namespace PostFinanceCheckout\PluginCore\Tests\Token;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Token\Exception\TokenException;
 use PostFinanceCheckout\PluginCore\Token\State;
 use PostFinanceCheckout\PluginCore\Token\Token;
@@ -53,8 +54,8 @@ class TokenServiceTest extends TestCase
             $this->service->createTokenForTransaction(1, 2);
             $this->fail('Expected TokenException to be thrown.');
         } catch (TokenException $e) {
-            $this->assertNotNull($e->getLocalizedReason());
-            $this->assertSame('Card declined by issuer', $e->getLocalizedReason()->localize('en-US'));
+            $this->assertInstanceOf(LocalizedString::class, $e->getLocalizedMessage());
+            $this->assertSame('Token creation failed. Please try again or contact support.', $e->getLocalizedMessage()->localize('en-US'));
             $this->assertInstanceOf(ApiException::class, $e->getPrevious());
         }
     }

@@ -6,6 +6,7 @@ namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1;
 
 use PostFinanceCheckout\PluginCore\Document\DocumentGatewayInterface;
 use PostFinanceCheckout\PluginCore\Document\RenderedDocument;
+use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
@@ -91,7 +92,10 @@ class DocumentGateway implements DocumentGatewayInterface
                 // So I will stick with the search logic as it is more robust for "Invoice Service".
 
                 // If no invoice found, check if there is one in CANCELED state or just throw.
-                throw new TransactionException("No invoice found for transaction $transactionId");
+                throw new TransactionException(
+                    "No invoice found for transaction $transactionId in space $spaceId.",
+                    new LocalizedString('No invoice found for the transaction.'),
+                );
             }
 
             $invoice = $invoices[0];

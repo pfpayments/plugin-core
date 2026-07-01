@@ -8,7 +8,9 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Address\Address;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
+use PostFinanceCheckout\PluginCore\Token\Exception\MissingTokenException;
 use PostFinanceCheckout\PluginCore\Token\Token;
+use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
 use PostFinanceCheckout\PluginCore\Transaction\RecurringTransactionGatewayInterface;
 use PostFinanceCheckout\PluginCore\Transaction\RecurringTransactionService;
 use PostFinanceCheckout\PluginCore\Transaction\Transaction;
@@ -114,7 +116,7 @@ class RecurringTransactionServiceTest extends TestCase
             ->with($spaceId, $transactionId)
             ->willReturn($originalTransaction);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(TransactionException::class);
         $this->expectExceptionMessage("Transaction $transactionId has no billing address.");
 
         $this->service->processRecurringPayment($spaceId, $transactionId);
@@ -139,7 +141,7 @@ class RecurringTransactionServiceTest extends TestCase
             ->with($spaceId, $transactionId)
             ->willReturn($originalTransaction);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(MissingTokenException::class);
         $this->expectExceptionMessage(
             "Transaction $transactionId has no token. "
             . "The original transaction must be created with tokenizationMode = FORCE_CREATION "

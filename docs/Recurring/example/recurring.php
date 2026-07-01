@@ -24,12 +24,10 @@ use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2\RecurringTransactionGatew
 use PostFinanceCheckout\PluginCore\Settings\Settings;
 use PostFinanceCheckout\PluginCore\Transaction\RecurringTransactionService;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
-use PostFinanceCheckout\PluginCore\Token\TokenService;
-use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2\TokenGateway;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemConsistencyService;
 use PostFinanceCheckout\PluginCore\Examples\Common\TransactionIdLoader;
 
-// 1. Initialize Services via Bootstrap
+// Initialize Services via Bootstrap
 $common = require __DIR__ . '/../../examples/Common/bootstrap.php';
 
 $spaceId = $common['spaceId'];
@@ -39,25 +37,23 @@ $logger = $common['logger'];
 $settings = $common['settings'];
 $sdkProvider = $common['sdkProvider'];
 
-// 2. Load Transaction ID
+// Load Transaction ID
 try {
     $transactionId = TransactionIdLoader::load($argv);
 } catch (\Exception $e) {
     exit(1);
 }
 
-// 3. Setup Services
+// Setup Services
 $transactionGateway = new TransactionGateway($sdkProvider, $logger, $settings);
 $recurringGateway = new RecurringTransactionGateway($sdkProvider, $logger);
 $consistencyService = new LineItemConsistencyService($settings, $logger);
 
 $transactionService = new TransactionService($transactionGateway, $consistencyService, $logger);
-$tokenService = new TokenService(new TokenGateway($sdkProvider, $logger), $logger);
 
 $recurringService = new RecurringTransactionService(
     $transactionService,
     $recurringGateway,
-    $tokenService,
     $logger
 );
 
@@ -69,10 +65,10 @@ echo "Original Transaction State: " . $originalTx->state->value . "\n";
 if ($originalTx->token) {
     echo "Token Found: ID=" . $originalTx->token->id . " State=" . $originalTx->token->state->value . "\n";
 } else {
-    echo "Token: None (will attempt to create one)\n";
+    echo "Token: None (recurring payment will fail — the original must use tokenizationMode = FORCE_CREATION)\n";
 }
 
-// 4. Execute Recurring Payment
+// Execute Recurring Payment
 try {
     $newTransaction = $recurringService->processRecurringPayment((int)$spaceId, $transactionId);
 

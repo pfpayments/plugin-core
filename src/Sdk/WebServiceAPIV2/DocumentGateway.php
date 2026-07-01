@@ -6,13 +6,15 @@ namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2;
 
 use PostFinanceCheckout\PluginCore\Document\DocumentGatewayInterface;
 use PostFinanceCheckout\PluginCore\Document\RenderedDocument;
+use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
+use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
 use PostFinanceCheckout\Sdk\Model\RenderedDocument as SdkRenderedDocument;
 use PostFinanceCheckout\Sdk\Service\RefundsService as SdkRefundsService;
+use PostFinanceCheckout\Sdk\Service\TransactionCompletionsService as SdkTransactionCompletionsService;
 use PostFinanceCheckout\Sdk\Service\TransactionInvoicesService as SdkTransactionInvoicesService;
 use PostFinanceCheckout\Sdk\Service\TransactionsService as SdkTransactionsService;
-use PostFinanceCheckout\Sdk\Service\TransactionCompletionsService as SdkTransactionCompletionsService;
 
 /**
  * Gateway for retrieving documents using the SDK.
@@ -55,7 +57,10 @@ class DocumentGateway implements DocumentGatewayInterface
 
             if (empty($completions)) {
                 // Ensure a completion exists, as invoices are typically generated upon completion.
-                throw new \Exception("No invoice found for transaction $transactionId");
+                throw new TransactionException(
+                    "No completion found for transaction $transactionId in space $spaceId when fetching invoice.",
+                    new LocalizedString('No invoice found for the transaction.'),
+                );
             }
 
             if (is_object($completions) && method_exists($completions, 'getData')) {
@@ -65,7 +70,10 @@ class DocumentGateway implements DocumentGatewayInterface
             }
 
             if (empty($completionData) || count($completionData) === 0) {
-                throw new \Exception("No completion found for transaction $transactionId.");
+                throw new TransactionException(
+                    "No completion data retrieved for transaction $transactionId in space $spaceId when fetching invoice.",
+                    new LocalizedString('No completion found for the transaction.'),
+                );
             }
 
             $completionId = $completionData[0]->getId();
@@ -81,7 +89,10 @@ class DocumentGateway implements DocumentGatewayInterface
             }
 
             if (empty($invoices) || count($invoices) === 0) {
-                throw new \Exception("No invoice found linked to completion $completionId (Transaction: $transactionId)");
+                throw new TransactionException(
+                    "No invoice found linked to completion $completionId for transaction $transactionId in space $spaceId.",
+                    new LocalizedString('No invoice found linked to the transaction completion.'),
+                );
             }
 
             $invoice = $invoices[0];

@@ -39,22 +39,15 @@ $context->tokenizationMode = TokenizationModeEnum::FORCE_CREATION;
  ```php
  use PostFinanceCheckout\PluginCore\Transaction\RecurringTransactionService;
  use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
- use PostFinanceCheckout\PluginCore\Token\TokenService;
  use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2\RecurringTransactionGateway;
- use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2\TokenGateway;
  
- // 1. Setup Gateways
+ // 1. Setup Gateway
  $recurringGateway = new RecurringTransactionGateway($sdkProvider, $logger);
- $tokenGateway = new TokenGateway($sdkProvider, $logger);
  
- // 2. Setup Services
- $tokenService = new TokenService($tokenGateway, $logger);
-
- // 3. Instantiate Recurring Service
+ // 2. Instantiate Recurring Service
  $recurringService = new RecurringTransactionService(
      $transactionService,
      $recurringGateway,
-     $tokenService,
      $logger
  );
  ```

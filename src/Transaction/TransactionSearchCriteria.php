@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Transaction;
 
-use PostFinanceCheckout\PluginCore\Render\JsonStringableTrait;
+use PostFinanceCheckout\PluginCore\SharedKernel\JsonStringableTrait;
 
 /**
  * Data Transfer Object for transaction search criteria.

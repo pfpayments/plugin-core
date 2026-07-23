@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2;
 
 use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
+use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
+use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\DateTimeMapperTrait;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
@@ -18,8 +20,10 @@ use PostFinanceCheckout\Sdk\Service\TransactionCommentsService as SdkTransaction
 /**
  * Gateway for retrieving transaction comments.
  */
+#[LogContext(domain: 'transaction')]
 class TransactionCommentGateway implements TransactionCommentGatewayInterface
 {
+    use DomainLoggerTrait;
     use DateTimeMapperTrait;
 
     /**
@@ -35,8 +39,9 @@ class TransactionCommentGateway implements TransactionCommentGatewayInterface
      */
     public function __construct(
         private readonly SdkProvider $sdkProvider,
-        private readonly LoggerInterface $logger,
+        LoggerInterface $logger,
     ) {
+        $this->initializeLogger($logger);
         $this->service = $this->sdkProvider->getService(SdkTransactionCommentService::class);
     }
 
@@ -57,7 +62,7 @@ class TransactionCommentGateway implements TransactionCommentGatewayInterface
             $items = (is_object($sdkComments) && method_exists($sdkComments, 'getData')) ? $sdkComments->getData() : (array)$sdkComments;
 
             return new TransactionCommentCollection(...array_map([$this, 'mapToTransactionComment'], $items));
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->error(
                 'Failed to fetch transaction comments: {errorMessage}',
                 [

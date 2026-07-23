@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Document;
 
-use PostFinanceCheckout\PluginCore\Render\JsonStringableTrait;
+use PostFinanceCheckout\PluginCore\SharedKernel\JsonStringableTrait;
 
 /**
  * Domain entity representing a rendered document (PDF).

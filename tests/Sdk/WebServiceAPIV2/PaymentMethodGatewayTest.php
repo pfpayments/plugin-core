@@ -7,6 +7,7 @@ namespace PostFinanceCheckout\PluginCore\Tests\Sdk\WebServiceAPIV2;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
+use PostFinanceCheckout\PluginCore\PaymentMethod\Exception\PaymentMethodException;
 use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethod;
 use PostFinanceCheckout\PluginCore\PaymentMethod\State;
 use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
@@ -71,7 +72,7 @@ class PaymentMethodGatewayTest extends TestCase
 
     public function testFetchByIdThrowsExceptionIfNotFound(): void
     {
-        $this->expectException(TransactionException::class);
+        $this->expectException(PaymentMethodException::class);
         $this->expectExceptionMessage('Payment method 10 not found: Not found');
 
         $this->service->expects($this->once())

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\PaymentMethod;
 
 use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
-use PostFinanceCheckout\PluginCore\Render\JsonStringableTrait;
+use PostFinanceCheckout\PluginCore\SharedKernel\JsonStringableTrait;
 
 /**
  * Domain entity representing a Payment Method.

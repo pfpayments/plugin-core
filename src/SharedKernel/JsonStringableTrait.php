@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PostFinanceCheckout\PluginCore\Render;
+namespace PostFinanceCheckout\PluginCore\SharedKernel;
 
 /**
  * Trait JsonStringableTrait

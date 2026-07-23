@@ -6,7 +6,7 @@ namespace PostFinanceCheckout\PluginCore\Http;
 
 use Magento\Framework\App\RequestInterface as MagentoRequest;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
-use PostFinanceCheckout\PluginCore\Render\JsonStringableTrait;
+use PostFinanceCheckout\PluginCore\SharedKernel\JsonStringableTrait;
 
 /**
  * Represents an HTTP request in a framework-agnostic way.

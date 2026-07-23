@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Document;
 
+use PostFinanceCheckout\PluginCore\Document\Exception\DocumentException;
+
 /**
  * Interface for retrieving rendered documents.
  */

@@ -5,21 +5,25 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2;
 
 use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
+use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
+use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethod;
 use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethodCollection;
 use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethodGatewayInterface;
 use PostFinanceCheckout\PluginCore\Sdk\PaymentMethodMapperTrait;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
+use PostFinanceCheckout\PluginCore\PaymentMethod\Exception\PaymentMethodException;
 use PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration as SdkPaymentMethodConfiguration;
 use PostFinanceCheckout\Sdk\Service\PaymentMethodConfigurationsService as SdkPaymentMethodConfigurationService;
 
 /**
  * Gateway implementation using the SDK V2.
  */
+#[LogContext(domain: 'sync')]
 class PaymentMethodGateway implements PaymentMethodGatewayInterface
 {
+    use DomainLoggerTrait;
     use PaymentMethodMapperTrait;
 
     /**
@@ -28,8 +32,9 @@ class PaymentMethodGateway implements PaymentMethodGatewayInterface
      */
     public function __construct(
         private readonly SdkProvider $provider,
-        private readonly LoggerInterface $logger,
+        LoggerInterface $logger,
     ) {
+        $this->initializeLogger($logger);
     }
 
     /**
@@ -51,7 +56,7 @@ class PaymentMethodGateway implements PaymentMethodGatewayInterface
                 'spaceId' => $spaceId,
                 'exception' => $e,
             ]);
-            throw new TransactionException(
+            throw new PaymentMethodException(
                 "Payment method {$id} not found: {$e->getMessage()}",
                 new LocalizedString('Payment method not found.'),
                 $e,
@@ -90,7 +95,7 @@ class PaymentMethodGateway implements PaymentMethodGatewayInterface
                 'spaceId' => $spaceId,
                 'exception' => $e,
             ]);
-            throw new TransactionException(
+            throw new PaymentMethodException(
                 "Unable to fetch payment methods: {$e->getMessage()}",
                 new LocalizedString('Unable to fetch payment methods.'),
                 $e,

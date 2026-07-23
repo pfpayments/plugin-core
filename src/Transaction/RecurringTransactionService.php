@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Transaction;
 
 use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
+use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
+use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Token\Exception\MissingTokenException;
 use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
@@ -15,13 +17,16 @@ use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
 /**
  * Service for handling recurring transactions.
  */
-readonly class RecurringTransactionService
+#[LogContext(domain: 'transaction', subdomain: 'recurring')]
+class RecurringTransactionService
 {
+    use DomainLoggerTrait;
     public function __construct(
-        private TransactionService $transactionService,
-        private RecurringTransactionGatewayInterface $recurringGateway,
-        private LoggerInterface $logger,
+        private readonly TransactionService $transactionService,
+        private readonly RecurringTransactionGatewayInterface $recurringGateway,
+        LoggerInterface $logger,
     ) {
+        $this->initializeLogger($logger);
     }
 
     /**

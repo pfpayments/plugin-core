@@ -6,8 +6,8 @@ namespace PostFinanceCheckout\PluginCore\Tests\Token;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
+use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Token\Exception\TokenException;
 use PostFinanceCheckout\PluginCore\Token\State;
 use PostFinanceCheckout\PluginCore\Token\Token;
@@ -48,7 +48,11 @@ class TokenServiceTest extends TestCase
     {
         $this->gateway->expects($this->once())
             ->method('createToken')
-            ->willThrowException(new ApiException('Card declined by issuer'));
+            ->willThrowException(new TokenException(
+                'Failed to create token for transaction 2: Card declined by issuer',
+                new LocalizedString('Token creation failed. Please try again or contact support.'),
+                new ApiException('Card declined by issuer'),
+            ));
 
         try {
             $this->service->createTokenForTransaction(1, 2);

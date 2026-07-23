@@ -6,7 +6,7 @@ namespace PostFinanceCheckout\PluginCore\Transaction\Completion;
 
 use PostFinanceCheckout\PluginCore\LineItem\LineItem;
 use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
-use PostFinanceCheckout\PluginCore\Render\JsonStringableTrait;
+use PostFinanceCheckout\PluginCore\SharedKernel\JsonStringableTrait;
 
 /**
  * Domain object representing a Transaction Completion (capture).

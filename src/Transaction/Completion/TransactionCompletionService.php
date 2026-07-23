@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Transaction\Completion;
 
 use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
+use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
+use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
 use PostFinanceCheckout\PluginCore\Transaction\Void\TransactionVoid;
@@ -12,12 +14,15 @@ use PostFinanceCheckout\PluginCore\Transaction\Void\TransactionVoid;
 /**
  * Service for handling transaction completions (Capture, Void).
  */
-readonly class TransactionCompletionService
+#[LogContext(domain: 'transaction', subdomain: 'completion')]
+class TransactionCompletionService
 {
+    use DomainLoggerTrait;
     public function __construct(
-        private TransactionCompletionGatewayInterface $completionGateway,
-        private LoggerInterface $logger,
+        private readonly TransactionCompletionGatewayInterface $completionGateway,
+        LoggerInterface $logger,
     ) {
+        $this->initializeLogger($logger);
     }
 
     /**

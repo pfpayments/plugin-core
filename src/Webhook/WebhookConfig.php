@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Webhook;
 
-use PostFinanceCheckout\PluginCore\Render\JsonStringableTrait;
+use PostFinanceCheckout\PluginCore\SharedKernel\JsonStringableTrait;
 use PostFinanceCheckout\PluginCore\Webhook\Enum\WebhookListener as WebhookListenerEnum;
 
 /**

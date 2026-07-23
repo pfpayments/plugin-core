@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Render;
 
+use PostFinanceCheckout\PluginCore\SharedKernel\JsonStringableTrait;
+
 /**
  * DTO containing the raw data required to initialize a payment form in headless or reactive environments.
  *

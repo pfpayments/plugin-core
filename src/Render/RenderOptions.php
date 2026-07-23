@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Render;
 
+use PostFinanceCheckout\PluginCore\SharedKernel\JsonStringableTrait;
+
 /**
  * Data Transfer Object for payment rendering options.
  *

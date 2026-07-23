@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1;
 
+use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
+use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
+use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Sdk\TransactionMapperTrait;
+use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
 use PostFinanceCheckout\PluginCore\Transaction\RecurringTransactionGatewayInterface;
 use PostFinanceCheckout\PluginCore\Transaction\Transaction;
 use PostFinanceCheckout\Sdk\Service\TransactionService as SdkTransactionService;
@@ -16,8 +20,10 @@ use PostFinanceCheckout\Sdk\Service\TransactionService as SdkTransactionService;
  *
  * Implementation of the RecurringTransactionGatewayInterface using the SDK V1.
  */
+#[LogContext(domain: 'transaction', subdomain: 'recurring')]
 class RecurringTransactionGateway implements RecurringTransactionGatewayInterface
 {
+    use DomainLoggerTrait;
     use TransactionMapperTrait;
 
     /**
@@ -33,8 +39,9 @@ class RecurringTransactionGateway implements RecurringTransactionGatewayInterfac
      */
     public function __construct(
         private readonly SdkProvider $sdkProvider,
-        private readonly LoggerInterface $logger,
+        LoggerInterface $logger,
     ) {
+        $this->initializeLogger($logger);
         $this->transactionService = $this->sdkProvider->getService(SdkTransactionService::class);
     }
 
@@ -61,13 +68,17 @@ class RecurringTransactionGateway implements RecurringTransactionGatewayInterfac
             ]);
 
             return $this->mapToTransaction($sdkTransaction);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->error("Failed to process recurring payment.", [
                 'transactionId' => $transactionId,
                 'spaceId' => $spaceId,
                 'exception' => $e,
             ]);
-            throw $e;
+            throw new TransactionException(
+                "Failed to process recurring payment for transaction $transactionId: " . $e->getMessage(),
+                new LocalizedString('The recurring payment could not be processed.'),
+                $e,
+            );
         }
     }
 }

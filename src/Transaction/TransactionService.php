@@ -6,6 +6,8 @@ namespace PostFinanceCheckout\PluginCore\Transaction;
 
 use PostFinanceCheckout\PluginCore\LineItem\LineItemConsistencyService;
 use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
+use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
+use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethod;
 use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethodCollection;
@@ -13,13 +15,16 @@ use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethodSorting;
 use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
 use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionTotalNegativeException;
 
+#[LogContext(domain: 'transaction', subdomain: 'checkout')]
 class TransactionService
 {
+    use DomainLoggerTrait;
     public function __construct(
         private readonly TransactionGatewayInterface $gateway,
         private readonly LineItemConsistencyService $consistencyService,
-        private readonly LoggerInterface $logger,
+        LoggerInterface $logger,
     ) {
+        $this->initializeLogger($logger);
     }
 
     /**
@@ -38,17 +43,17 @@ class TransactionService
             ]);
 
             if (($context->expectedGrandTotal ?? 0.0) < -0.00000001) {
-                $context->lineItems = $this->consistencyService->sanitizeNegativeLineItems($context->lineItems)->all();
+                $context->lineItems = $this->consistencyService->sanitizeNegativeLineItems($context->lineItems->all());
                 $context->expectedGrandTotal = 0.0;
             }
 
             $context->lineItems = $this->consistencyService->ensureConsistency(
-                $context->lineItems,
+                $context->lineItems->all(),
                 $context->expectedGrandTotal,
                 $context->currencyCode,
                 $context->spaceId,
                 $context->transactionId,
-            )->all();
+            );
 
             $this->validateContext($context);
 
@@ -287,7 +292,7 @@ class TransactionService
                 }
 
                 if (($context->expectedGrandTotal ?? 0.0) < -0.00000001) {
-                    $context->lineItems = $this->consistencyService->sanitizeNegativeLineItems($context->lineItems)->all();
+                    $context->lineItems = $this->consistencyService->sanitizeNegativeLineItems($context->lineItems->all());
                     $context->expectedGrandTotal = 0.0;
                 }
 

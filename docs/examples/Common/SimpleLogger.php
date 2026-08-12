@@ -4,6 +4,8 @@ namespace PostFinanceCheckout\PluginCore\Examples\Common;
 
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 
+// 📖 Concept documentation: See docs/examples/Common/README.md
+
 /**
  * A simple logger implementation that outputs to stdout.
  */

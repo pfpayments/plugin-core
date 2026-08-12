@@ -13,6 +13,7 @@ use PostFinanceCheckout\PluginCore\Transaction\Transaction;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionContext;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
 use PostFinanceCheckout\PluginCore\Token\Exception\MissingTokenException;
+use PostFinanceCheckout\PluginCore\Token\State as TokenState;
 use PostFinanceCheckout\PluginCore\Token\Token;
 use PostFinanceCheckout\PluginCore\Address\Address;
 
@@ -48,8 +49,7 @@ class RecurringTransactionServiceTest extends TestCase
         $originalTransaction->customerId = 'CUST-001';
         $originalTransaction->currency = 'USD';
 
-        $token = new Token();
-        $token->id = 555;
+        $token = new Token(id: 555, state: TokenState::ACTIVE);
         $originalTransaction->token = $token;
 
         $address = new Address();

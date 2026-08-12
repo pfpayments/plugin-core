@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\LineItem;
 
-use PostFinanceCheckout\PluginCore\Currency\CurrencyRoundingService;
+use PostFinanceCheckout\PluginCore\GlobalData\Currency\CurrencyRoundingService;
 use PostFinanceCheckout\PluginCore\LineItem\Exception\LineItemConsistencyException;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemCollection;
 use PostFinanceCheckout\PluginCore\Localization\LocalizedString;

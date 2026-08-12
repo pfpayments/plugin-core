@@ -4,6 +4,8 @@ namespace PostFinanceCheckout\PluginCore\Examples\Common;
 
 use PostFinanceCheckout\PluginCore\Transaction\TransactionPersistenceInterface;
 
+// 📖 Concept documentation: See docs/examples/Common/README.md
+
 /**
  * Simulates a shop database or session storage using a local JSON file.
  */

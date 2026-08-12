@@ -9,6 +9,8 @@ use PostFinanceCheckout\PluginCore\Examples\Common\EnvSettingsProvider;
 use PostFinanceCheckout\PluginCore\Examples\Common\FilePersistence;
 use PostFinanceCheckout\PluginCore\Examples\Common\TransactionIdLoader;
 
+// 📖 Concept documentation: See docs/examples/Common/README.md
+
 // Load helpers
 require_once __DIR__ . '/SimpleLogger.php';
 require_once __DIR__ . '/EnvSettingsProvider.php';

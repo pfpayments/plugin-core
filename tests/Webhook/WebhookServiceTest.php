@@ -14,7 +14,6 @@ use PostFinanceCheckout\PluginCore\Webhook\WebhookListener as WebhookListenerDto
 use PostFinanceCheckout\PluginCore\Webhook\WebhookListenerCollection;
 use PostFinanceCheckout\PluginCore\Webhook\WebhookManagementGatewayInterface;
 use PostFinanceCheckout\PluginCore\Webhook\WebhookService;
-use PostFinanceCheckout\PluginCore\Webhook\WebhookSignatureGatewayInterface;
 use PostFinanceCheckout\PluginCore\Webhook\WebhookUrl;
 use PostFinanceCheckout\PluginCore\Webhook\WebhookUrlCollection;
 
@@ -28,17 +27,14 @@ class WebhookServiceTest extends TestCase
     private LoggerInterface|MockObject $logger;
     private WebhookManagementGatewayInterface|MockObject $managementGateway;
     private WebhookService $service;
-    private WebhookSignatureGatewayInterface|MockObject $signatureGateway;
 
     protected function setUp(): void
     {
         $this->managementGateway = $this->createMock(WebhookManagementGatewayInterface::class);
-        $this->signatureGateway = $this->createMock(WebhookSignatureGatewayInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->service = new WebhookService(
             $this->managementGateway,
-            $this->signatureGateway,
             $this->logger,
         );
     }
@@ -306,40 +302,5 @@ class WebhookServiceTest extends TestCase
         $this->assertSame($expectedUrl, $result);
     }
 
-    /**
-     * Test signature validation failure.
-     */
-    public function testValidatePayloadFailure(): void
-    {
-        $signature = 'invalid-signature';
-        $payload = '{"test": "data"}';
 
-        $this->signatureGateway->expects($this->once())
-            ->method('validate')
-            ->with($signature, $payload)
-            ->willReturn(false);
-
-        $this->logger->expects($this->once())
-            ->method('warning');
-
-        $result = $this->service->validatePayload($signature, $payload);
-        $this->assertFalse($result);
-    }
-
-    /**
-     * Test signature validation success.
-     */
-    public function testValidatePayloadSuccess(): void
-    {
-        $signature = 'valid-signature';
-        $payload = '{"test": "data"}';
-
-        $this->signatureGateway->expects($this->once())
-            ->method('validate')
-            ->with($signature, $payload)
-            ->willReturn(true);
-
-        $result = $this->service->validatePayload($signature, $payload);
-        $this->assertTrue($result);
-    }
 }

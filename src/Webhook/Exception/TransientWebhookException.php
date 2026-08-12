@@ -11,7 +11,7 @@ use PostFinanceCheckout\PluginCore\SharedKernel\AbstractDomainException;
  * (e.g. a lock contention timeout under concurrent deliveries).
  *
  * Consumers throw this instead of a generic exception to tell the core
- * that the standard portal retry will recover the situation, so it is
+ * that the standard PostFinanceCheckout Portal retry will recover the situation, so it is
  * logged at a low severity instead of as an error.
  */
 class TransientWebhookException extends AbstractDomainException

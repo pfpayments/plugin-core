@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1;
 
-use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
 use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
@@ -56,16 +55,18 @@ class WebhookSignatureGateway implements WebhookSignatureGatewayInterface
         } catch (\Throwable $e) {
             // TODO: Include spaceId and transactionId in log context when available
             $this->logger->error(
-                'Webhook signature validation failed: {errorMessage}',
+                'Webhook signature validation failed.',
                 [
                     'errorMessage' => $e->getMessage(),
                     'exception' => $e,
                 ],
             );
-            throw new WebhookSignatureValidationException(
-                "Webhook signature validation failed: " . $e->getMessage(),
-                new LocalizedString("Webhook signature validation failed."),
+            throw SdkProvider::wrapException(
                 $e,
+                WebhookSignatureValidationException::class,
+                'isContentValid',
+                [],
+                'Webhook signature validation failed.',
             );
         }
     }

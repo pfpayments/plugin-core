@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1;
 
-use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
 use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
@@ -74,10 +73,12 @@ class RecurringTransactionGateway implements RecurringTransactionGatewayInterfac
                 'spaceId' => $spaceId,
                 'exception' => $e,
             ]);
-            throw new TransactionException(
-                "Failed to process recurring payment for transaction $transactionId: " . $e->getMessage(),
-                new LocalizedString('The recurring payment could not be processed.'),
+            throw SdkProvider::wrapException(
                 $e,
+                TransactionException::class,
+                'processWithoutUserInteraction',
+                ['spaceId' => $spaceId, 'transactionId' => $transactionId],
+                'The recurring payment could not be processed.',
             );
         }
     }

@@ -10,6 +10,7 @@ use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1\WebhookManagementGateway;
 use PostFinanceCheckout\PluginCore\Webhook\Enum\WebhookListener as WebhookListenerEnum;
+use PostFinanceCheckout\PluginCore\Webhook\Exception\WebhookManagementException;
 use PostFinanceCheckout\PluginCore\Webhook\WebhookListener;
 use PostFinanceCheckout\PluginCore\Webhook\WebhookUrl;
 use PostFinanceCheckout\Sdk\Model\CreationEntityState;
@@ -45,6 +46,38 @@ class WebhookManagementGatewayTest extends TestCase
             ]);
 
         $this->gateway = new WebhookManagementGateway($this->sdkProvider, $this->logger);
+    }
+
+    public function testAnSdkFailureIsLoggedAndWrappedInTheDomainException(): void
+    {
+        // The error path was previously funnelled through a wrapSdkCall() closure and
+        // had no coverage at all. It is now an explicit catch in each method, so this
+        // pins that a raw SDK failure still surfaces as the domain exception with the
+        // original throwable kept as previous.
+        $sdkFailure = new \Exception('SDK unavailable');
+        $this->listenerService->method('delete')->willThrowException($sdkFailure);
+
+        $this->logger->expects($this->once())
+            ->method('error')
+            ->with(
+                $this->stringContains('Failed to delete the webhook listener'),
+                $this->callback(function (array $context) use ($sdkFailure): bool {
+                    $this->assertSame($sdkFailure, $context['exception']);
+                    $this->assertSame(1, $context['spaceId']);
+                    $this->assertSame(200, $context['listenerId']);
+
+                    return true;
+                }),
+            );
+
+        try {
+            $this->gateway->deleteListener(1, 200);
+            $this->fail('Expected a WebhookManagementException.');
+        } catch (WebhookManagementException $e) {
+            $this->assertSame($sdkFailure, $e->getPrevious());
+            // Identifying context survives into the centralized message.
+            $this->assertStringContainsString('listenerId=200', $e->getMessage());
+        }
     }
 
     /**

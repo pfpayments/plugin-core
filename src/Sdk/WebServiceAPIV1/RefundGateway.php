@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV1;
 
 use PostFinanceCheckout\PluginCore\LineItem\LineItemCollection;
-use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
 use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
@@ -19,7 +18,6 @@ use PostFinanceCheckout\PluginCore\Sdk\DateTimeMapperTrait;
 use PostFinanceCheckout\PluginCore\Sdk\FailureReasonMapperTrait;
 use PostFinanceCheckout\PluginCore\Sdk\LineItemMapperTrait;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\Sdk\Http\ConnectionException;
 use PostFinanceCheckout\Sdk\Model\CriteriaOperator as SdkCriteriaOperator;
 use PostFinanceCheckout\Sdk\Model\EntityQuery as SdkEntityQuery;
 use PostFinanceCheckout\Sdk\Model\EntityQueryFilter as SdkEntityQueryFilter;
@@ -60,7 +58,7 @@ class RefundGateway implements RefundGatewayInterface
             return $this->mapToRefund($sdkRefund, (int)$sdkRefund->getTransaction()->getId());
         } catch (\Throwable $e) {
             $this->logger->error(
-                'Failed to read refund: {errorMessage}',
+                'Failed to read refund.',
                 [
                     'errorMessage' => $e->getMessage(),
                     'exception' => $e,
@@ -68,10 +66,12 @@ class RefundGateway implements RefundGatewayInterface
                     'spaceId' => $spaceId,
                 ],
             );
-            throw new RefundException(
-                "Failed to read refund {$refundId}: " . $e->getMessage(),
-                new LocalizedString('An error occurred while retrieving the refund.'),
+            throw SdkProvider::wrapException(
                 $e,
+                RefundException::class,
+                'read',
+                ['spaceId' => $spaceId, 'refundId' => $refundId],
+                'An error occurred while retrieving the refund.',
             );
         }
     }
@@ -95,7 +95,7 @@ class RefundGateway implements RefundGatewayInterface
             return new RefundCollection(...$refunds);
         } catch (\Throwable $e) {
             $this->logger->error(
-                'Failed to find refunds for transaction: {errorMessage}',
+                'Failed to find refunds for transaction.',
                 [
                     'errorMessage' => $e->getMessage(),
                     'exception' => $e,
@@ -103,10 +103,12 @@ class RefundGateway implements RefundGatewayInterface
                     'transactionId' => $transactionId,
                 ],
             );
-            throw new RefundException(
-                "Failed to find refunds for transaction {$transactionId}: " . $e->getMessage(),
-                new LocalizedString('An error occurred while retrieving refunds.'),
+            throw SdkProvider::wrapException(
                 $e,
+                RefundException::class,
+                'search',
+                ['spaceId' => $spaceId, 'transactionId' => $transactionId],
+                'An error occurred while retrieving refunds.',
             );
         }
     }
@@ -217,16 +219,14 @@ class RefundGateway implements RefundGatewayInterface
                 'spaceId' => $spaceId,
                 'exception' => $e,
             ]);
-            $exception = new RefundException(
-                "Unable to process refund: {$e->getMessage()}",
-                new LocalizedString('An error occurred while processing the refund.'),
+            $exception = SdkProvider::wrapException(
                 $e,
+                RefundException::class,
+                'refund',
+                ['spaceId' => $spaceId, 'transactionId' => $context->transactionId],
+                'An error occurred while processing the refund.',
             );
 
-            // A connection error is transient; retrying the same refund request is expected to succeed.
-            if ($e instanceof ConnectionException) {
-                $exception->withRetryable(true);
-            }
 
             throw $exception;
         }

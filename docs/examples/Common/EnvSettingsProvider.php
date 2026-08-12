@@ -5,6 +5,8 @@ namespace PostFinanceCheckout\PluginCore\Examples\Common;
 use PostFinanceCheckout\PluginCore\Settings\DefaultSettingsProvider;
 use PostFinanceCheckout\PluginCore\Settings\IntegrationMode;
 
+// 📖 Concept documentation: See docs/examples/Common/README.md
+
 class EnvSettingsProvider extends DefaultSettingsProvider
 {
     public function getSpaceId(): ?int

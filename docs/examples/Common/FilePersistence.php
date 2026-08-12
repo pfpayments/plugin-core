@@ -4,6 +4,8 @@ namespace PostFinanceCheckout\PluginCore\Examples\Common;
 
 use PostFinanceCheckout\PluginCore\Transaction\TransactionPersistenceInterface;
 
+// 📖 Concept documentation: See docs/examples/Common/README.md
+
 class FilePersistence implements \PostFinanceCheckout\PluginCore\Transaction\TransactionPersistenceInterface
 {
     private string $filePath;

@@ -11,6 +11,7 @@ use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
 use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Refund\Exception\InvalidRefundException;
+use PostFinanceCheckout\PluginCore\Refund\Exception\RefundException;
 use PostFinanceCheckout\PluginCore\Transaction\Transaction;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
 
@@ -75,6 +76,22 @@ class RefundService
         }
 
         return new LineItemCollection(...$refundableItems);
+    }
+
+    /**
+     * Finds a single refund by its own ID.
+     *
+     * Chiefly used from a webhook handler: a refund notification carries a refund
+     * ID but no transaction ID, so this is what resolves the rest of the record.
+     *
+     * @param int $spaceId The space ID.
+     * @param int $refundId The refund ID.
+     * @return Refund The refund.
+     * @throws RefundException If the refund cannot be read.
+     */
+    public function findById(int $spaceId, int $refundId): Refund
+    {
+        return $this->gateway->findById($spaceId, $refundId);
     }
 
     /**

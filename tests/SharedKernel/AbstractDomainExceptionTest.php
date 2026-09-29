@@ -7,7 +7,7 @@ namespace PostFinanceCheckout\PluginCore\Tests\SharedKernel;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\Refund\Exception\InvalidRefundException;
 use PostFinanceCheckout\PluginCore\SharedKernel\AbstractDomainException;
-use PostFinanceCheckout\PluginCore\Webhook\Exception\TransientWebhookException;
+use PostFinanceCheckout\PluginCore\Webhook\Exception\RetryableWebhookException;
 
 class AbstractDomainExceptionTest extends TestCase
 {
@@ -25,9 +25,9 @@ class AbstractDomainExceptionTest extends TestCase
         $this->assertFalse($exception->isRetryable());
     }
 
-    public function testTransientWebhookExceptionIsRetryableByDefault(): void
+    public function testRetryableWebhookExceptionIsRetryableByDefault(): void
     {
-        $exception = new TransientWebhookException('lock contention');
+        $exception = new RetryableWebhookException('lock contention');
 
         $this->assertTrue($exception->isRetryable());
     }

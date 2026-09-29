@@ -16,6 +16,7 @@ use PostFinanceCheckout\PluginCore\Refund\RefundGatewayInterface;
 use PostFinanceCheckout\PluginCore\Refund\State as StateEnum;
 use PostFinanceCheckout\PluginCore\Sdk\DateTimeMapperTrait;
 use PostFinanceCheckout\PluginCore\Sdk\FailureReasonMapperTrait;
+use PostFinanceCheckout\PluginCore\Sdk\LabelMapperTrait;
 use PostFinanceCheckout\PluginCore\Sdk\LineItemMapperTrait;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\Sdk\Model\CriteriaOperator as SdkCriteriaOperator;
@@ -34,6 +35,7 @@ class RefundGateway implements RefundGatewayInterface
     use DateTimeMapperTrait;
     use DomainLoggerTrait;
     use FailureReasonMapperTrait;
+    use LabelMapperTrait;
     use LineItemMapperTrait;
 
     private SdkRefundService $sdkRefundService;
@@ -150,6 +152,8 @@ class RefundGateway implements RefundGatewayInterface
         if (!empty($sdkReducedLineItems)) {
             $refund->reducedLineItems = new LineItemCollection(...array_map([$this, 'mapToLineItem'], $sdkReducedLineItems));
         }
+
+        $refund->labels = $this->mapToLabels($sdkRefund->getLabels());
 
         return $refund;
     }

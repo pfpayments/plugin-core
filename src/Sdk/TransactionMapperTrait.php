@@ -9,7 +9,6 @@ use PostFinanceCheckout\PluginCore\Customer\CompanyDetails;
 use PostFinanceCheckout\PluginCore\Customer\Gender;
 use PostFinanceCheckout\PluginCore\Customer\PersonalDetails;
 use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
-use PostFinanceCheckout\PluginCore\Token\Token;
 use PostFinanceCheckout\PluginCore\Transaction\State as StateEnum;
 use PostFinanceCheckout\PluginCore\Transaction\Transaction;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionEnvironment;

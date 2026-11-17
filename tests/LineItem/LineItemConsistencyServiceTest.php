@@ -7,7 +7,6 @@ namespace PostFinanceCheckout\PluginCore\Tests\LineItem;
 use PHPUnit\Framework\TestCase;
 use PostFinanceCheckout\PluginCore\LineItem\Exception\LineItemConsistencyException;
 use PostFinanceCheckout\PluginCore\LineItem\LineItem;
-use PostFinanceCheckout\PluginCore\LineItem\LineItemCollection;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemConsistencyService;
 use PostFinanceCheckout\PluginCore\LineItem\RoundingStrategy;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;

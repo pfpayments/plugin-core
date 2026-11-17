@@ -10,45 +10,31 @@ use PostFinanceCheckout\PluginCore\Customer\PersonalDetails;
 use PostFinanceCheckout\PluginCore\LineItem\LineItem;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemAttribute;
 use PostFinanceCheckout\PluginCore\LineItem\LineItemAttributeCollection;
-use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
 use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
-use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethod;
 use PostFinanceCheckout\PluginCore\PaymentMethod\PaymentMethodCollection;
-use PostFinanceCheckout\PluginCore\PaymentMethod\State as PaymentMethodState;
 use PostFinanceCheckout\PluginCore\Sdk\PaymentMethodMapperTrait;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
-use PostFinanceCheckout\PluginCore\Sdk\SearchPaginationTrait;
 use PostFinanceCheckout\PluginCore\Sdk\TransactionMapperTrait;
 use PostFinanceCheckout\PluginCore\Settings\IntegrationMode as IntegrationModeEnum;
 use PostFinanceCheckout\PluginCore\Settings\Settings;
 use PostFinanceCheckout\PluginCore\Tax\Tax;
-use PostFinanceCheckout\PluginCore\Token\State as TokenState;
-use PostFinanceCheckout\PluginCore\Token\Token;
 use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
 use PostFinanceCheckout\PluginCore\Transaction\PaymentUrl;
-use PostFinanceCheckout\PluginCore\Transaction\State as StateEnum;
 use PostFinanceCheckout\PluginCore\Transaction\Transaction;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionCollection;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionContext;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionGatewayInterface;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionSearchCriteria;
 use PostFinanceCheckout\Sdk\ApiException;
-use PostFinanceCheckout\Sdk\Model\Address as SdkAddress;
 use PostFinanceCheckout\Sdk\Model\AddressCreate as SdkAddressCreate;
-use PostFinanceCheckout\Sdk\Model\CreationEntityState as SdkCreationEntityState;
-use PostFinanceCheckout\Sdk\Model\LineItem as SdkLineItem;
 use PostFinanceCheckout\Sdk\Model\LineItemAttributeCreate as SdkLineItemAttributeCreate;
 use PostFinanceCheckout\Sdk\Model\LineItemCreate as SdkLineItemCreate;
 use PostFinanceCheckout\Sdk\Model\LineItemType as SdkLineItemType;
-use PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration as SdkPaymentMethodConfiguration;
 use PostFinanceCheckout\Sdk\Model\TaxCreate as SdkTaxCreate;
-use PostFinanceCheckout\Sdk\Model\Token as SdkToken;
-use PostFinanceCheckout\Sdk\Model\Transaction as SdkTransaction;
 use PostFinanceCheckout\Sdk\Model\TransactionCreate as SdkTransactionCreate;
 use PostFinanceCheckout\Sdk\Model\TransactionPending as SdkTransactionPending;
-use PostFinanceCheckout\Sdk\Service\PaymentMethodConfigurationsService as SdkPaymentMethodConfigurationsService;
 use PostFinanceCheckout\Sdk\Service\TransactionsService as SdkTransactionsService;
 
 #[LogContext(domain: 'transaction', subdomain: 'checkout')]
@@ -57,13 +43,11 @@ class TransactionGateway implements TransactionGatewayInterface
     use DomainLoggerTrait;
     use PaymentMethodMapperTrait;
     use TransactionMapperTrait;
-    use SearchPaginationTrait;
     /**
      * Related entities this API omits from a transaction unless they are expanded.
      */
     private const EXPAND = ['billingAddress', 'shippingAddress', 'lineItems', 'token'];
 
-    private SdkPaymentMethodConfigurationsService $paymentMethodConfigService;
     private SdkTransactionsService $transactionsService;
 
     public function __construct(
@@ -73,7 +57,6 @@ class TransactionGateway implements TransactionGatewayInterface
     ) {
         $this->initializeLogger($logger);
         $this->transactionsService = $this->sdkProvider->getService(SdkTransactionsService::class);
-        $this->paymentMethodConfigService = $this->sdkProvider->getService(SdkPaymentMethodConfigurationsService::class);
     }
 
     /**
@@ -314,50 +297,6 @@ class TransactionGateway implements TransactionGatewayInterface
                 'getPaymentTransactionsIdPaymentMethodConfigurations',
                 ['spaceId' => $spaceId, 'transactionId' => $transactionId],
                 'Unable to fetch the available payment methods.',
-            );
-        }
-    }
-
-    public function getPaymentMethodConfigurations(int $spaceId): PaymentMethodCollection
-    {
-        // Search for active payment method configurations using the V2 query syntax.
-        $query = "state:ACTIVE";
-
-        try {
-            // Paged rather than read in one call: a space with more active
-            // configurations than one page holds would otherwise silently lose the rest.
-            $items = iterator_to_array(
-                $this->paginateSearch(
-                    function (int $offset) use ($spaceId, $query): object {
-                        return $this->paymentMethodConfigService->getPaymentMethodConfigurationsSearch(
-                            $spaceId,
-                            null,
-                            SdkProvider::MAX_PAGE_SIZE,
-                            $offset,
-                            null,
-                            $query,
-                        );
-                    },
-                ),
-            );
-
-            $this->logger->debug("Gateway: Fetched payment method configurations.", [
-                'count' => count($items),
-                'spaceId' => $spaceId,
-            ]);
-
-            return new PaymentMethodCollection(...array_map([$this, 'mapToPaymentMethod'], $items));
-        } catch (\Throwable $e) {
-            $this->logger->error("Gateway: Failed to fetch payment method configurations.", [
-                'spaceId' => $spaceId,
-                'exception' => $e,
-            ]);
-            throw SdkProvider::wrapException(
-                $e,
-                TransactionException::class,
-                'getPaymentMethodConfigurationsSearch',
-                ['spaceId' => $spaceId],
-                'Failed to fetch payment method configurations.',
             );
         }
     }

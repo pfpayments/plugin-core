@@ -16,7 +16,6 @@ use PostFinanceCheckout\PluginCore\Token\Token;
 use PostFinanceCheckout\PluginCore\Token\TokenGatewayInterface;
 use PostFinanceCheckout\PluginCore\Token\TokenVersion;
 use PostFinanceCheckout\Sdk\ApiException;
-use PostFinanceCheckout\Sdk\Model\PaymentConnector as SdkPaymentConnector;
 use PostFinanceCheckout\Sdk\Model\RestApiErrorResponse as SdkRestApiErrorResponse;
 use PostFinanceCheckout\Sdk\Model\Token as SdkToken;
 use PostFinanceCheckout\Sdk\Model\TokenVersion as SdkTokenVersion;

@@ -11,7 +11,6 @@ use PostFinanceCheckout\PluginCore\GlobalData\LabelDescriptor\LabelDescriptorCol
 use PostFinanceCheckout\PluginCore\GlobalData\LabelDescriptorGroup\LabelDescriptorGroupCollection;
 use PostFinanceCheckout\PluginCore\GlobalData\Language\LanguageCollection;
 use PostFinanceCheckout\PluginCore\GlobalData\PaymentConnector\PaymentConnectorCollection;
-use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
 use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;

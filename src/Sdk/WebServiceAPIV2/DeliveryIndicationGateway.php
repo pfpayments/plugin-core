@@ -7,7 +7,6 @@ namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2;
 use PostFinanceCheckout\PluginCore\DeliveryIndication\DeliveryIndication;
 use PostFinanceCheckout\PluginCore\DeliveryIndication\DeliveryIndicationGatewayInterface;
 use PostFinanceCheckout\PluginCore\DeliveryIndication\Exception\DeliveryIndicationException;
-use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
 use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
@@ -16,7 +15,6 @@ use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\Sdk\Model\DeliveryIndication as SdkDeliveryIndication;
 use PostFinanceCheckout\Sdk\Model\DeliveryIndicationSearchResponse as SdkDeliveryIndicationSearchResponse;
 use PostFinanceCheckout\Sdk\Model\RestApiErrorResponse as SdkRestApiErrorResponse;
-use PostFinanceCheckout\Sdk\Model\Transaction as SdkTransaction;
 use PostFinanceCheckout\Sdk\Service\DeliveryIndicationsService as SdkDeliveryIndicationsService;
 
 /**

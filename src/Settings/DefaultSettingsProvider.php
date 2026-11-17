@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Settings;
 
 use PostFinanceCheckout\PluginCore\LineItem\RoundingStrategy;
-use PostFinanceCheckout\PluginCore\Settings\IntegrationMode;
 
 /**
  * Default base class for Settings Providers.

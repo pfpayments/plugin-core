@@ -9,8 +9,6 @@ use PostFinanceCheckout\PluginCore\Customer\CompanyDetails;
 use PostFinanceCheckout\PluginCore\Customer\Gender;
 use PostFinanceCheckout\PluginCore\Customer\PersonalDetails;
 use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
-use PostFinanceCheckout\PluginCore\Token\State as TokenState;
-use PostFinanceCheckout\PluginCore\Token\Token;
 use PostFinanceCheckout\PluginCore\Transaction\State as StateEnum;
 use PostFinanceCheckout\PluginCore\Transaction\Transaction;
 use PostFinanceCheckout\PluginCore\Transaction\TransactionEnvironment;
@@ -19,7 +17,6 @@ use PostFinanceCheckout\Sdk\Model\Address as SdkAddress;
 use PostFinanceCheckout\Sdk\Model\PaymentConnector as SdkPaymentConnector;
 use PostFinanceCheckout\Sdk\Model\PaymentConnectorConfiguration as SdkPaymentConnectorConfiguration;
 use PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration as SdkPaymentMethodConfiguration;
-use PostFinanceCheckout\Sdk\Model\Token as SdkToken;
 use PostFinanceCheckout\Sdk\Model\Transaction as SdkTransaction;
 
 /**

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckout\PluginCore\Sdk\WebServiceAPIV2;
 
-use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
 use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
@@ -15,7 +14,6 @@ use PostFinanceCheckout\PluginCore\Sdk\PaymentMethodMapperTrait;
 use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
 use PostFinanceCheckout\PluginCore\Sdk\SearchPaginationTrait;
 use PostFinanceCheckout\PluginCore\PaymentMethod\Exception\PaymentMethodException;
-use PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration as SdkPaymentMethodConfiguration;
 use PostFinanceCheckout\Sdk\Service\PaymentMethodConfigurationsService as SdkPaymentMethodConfigurationService;
 
 /**
@@ -42,16 +40,19 @@ class PaymentMethodGateway implements PaymentMethodGatewayInterface
     /**
      * @inheritDoc
      */
-    public function fetchById(int $spaceId, int $id): PaymentMethod
+    public function fetchById(int $spaceId, int $id, array $locales = []): PaymentMethod
     {
         try {
-            /** @var SdkPaymentMethodConfigurationService $service */
-            $service = $this->sdkProvider->getService(SdkPaymentMethodConfigurationService::class);
+            $methods = $this->fetchLocalizedPaymentMethods(
+                $this->sdkProvider,
+                $this->logger,
+                $locales,
+                static fn (SdkPaymentMethodConfigurationService $service): array => [
+                    $service->getPaymentMethodConfigurationsId($id, $spaceId),
+                ],
+            );
 
-            // V2: getPaymentMethodConfigurationsId($id, $space)
-            $config = $service->getPaymentMethodConfigurationsId($id, $spaceId);
-
-            return $this->mapToPaymentMethod($config);
+            return $methods[0];
         } catch (\Throwable $e) {
             $this->logger->error("PaymentMethodGateway: Failed to fetch payment method from SDK.", [
                 'paymentMethodId' => $id,
@@ -71,12 +72,9 @@ class PaymentMethodGateway implements PaymentMethodGatewayInterface
     /**
      * @inheritDoc
      */
-    public function fetchBySpaceId(int $spaceId, ?string $state = null): PaymentMethodCollection
+    public function fetchBySpaceId(int $spaceId, ?string $state = null, array $locales = []): PaymentMethodCollection
     {
         try {
-            /** @var SdkPaymentMethodConfigurationService $service */
-            $service = $this->sdkProvider->getService(SdkPaymentMethodConfigurationService::class);
-
             // V2 Search: query string
             $query = null;
             if ($state !== null) {
@@ -92,22 +90,23 @@ class PaymentMethodGateway implements PaymentMethodGatewayInterface
             // Paged rather than read in one call: callers are promised every
             // configuration in the space, and a truncated list makes the sync
             // deactivate methods that are still active.
-            $items = iterator_to_array(
-                $this->paginateSearch(
-                    static function (int $offset) use ($service, $spaceId, $query): object {
-                        return $service->getPaymentMethodConfigurationsSearch(
-                            $spaceId,
-                            null,
-                            SdkProvider::MAX_PAGE_SIZE,
-                            $offset,
-                            null,
-                            $query,
-                        );
-                    },
+            $methods = $this->fetchLocalizedPaymentMethods(
+                $this->sdkProvider,
+                $this->logger,
+                $locales,
+                fn (SdkPaymentMethodConfigurationService $service): \Generator => $this->paginateSearch(
+                    static fn (int $offset): object => $service->getPaymentMethodConfigurationsSearch(
+                        $spaceId,
+                        null,
+                        SdkProvider::MAX_PAGE_SIZE,
+                        $offset,
+                        null,
+                        $query,
+                    ),
                 ),
             );
 
-            return new PaymentMethodCollection(...array_map([$this, 'mapToPaymentMethod'], $items));
+            return new PaymentMethodCollection(...$methods);
         } catch (\Throwable $e) {
             $this->logger->error("PaymentMethodGateway: Failed to fetch payment methods from SDK.", [
                 'spaceId' => $spaceId,

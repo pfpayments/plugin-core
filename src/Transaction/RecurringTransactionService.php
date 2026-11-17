@@ -10,9 +10,6 @@ use PostFinanceCheckout\PluginCore\Log\LogContext;
 use PostFinanceCheckout\PluginCore\Log\LoggerInterface;
 use PostFinanceCheckout\PluginCore\Token\Exception\MissingTokenException;
 use PostFinanceCheckout\PluginCore\Transaction\Exception\TransactionException;
-use PostFinanceCheckout\PluginCore\Transaction\Transaction;
-use PostFinanceCheckout\PluginCore\Transaction\TransactionContext;
-use PostFinanceCheckout\PluginCore\Transaction\TransactionService;
 
 /**
  * Service for handling recurring transactions.

@@ -6,7 +6,6 @@ namespace PostFinanceCheckout\PluginCore\LineItem;
 
 use PostFinanceCheckout\PluginCore\GlobalData\Currency\CurrencyRoundingService;
 use PostFinanceCheckout\PluginCore\LineItem\Exception\LineItemConsistencyException;
-use PostFinanceCheckout\PluginCore\LineItem\LineItemCollection;
 use PostFinanceCheckout\PluginCore\Localization\LocalizedString;
 use PostFinanceCheckout\PluginCore\Log\DomainLoggerTrait;
 use PostFinanceCheckout\PluginCore\Log\LogContext;

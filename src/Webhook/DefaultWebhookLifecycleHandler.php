@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PostFinanceCheckout\PluginCore\Webhook;
 
 use PostFinanceCheckout\PluginCore\Webhook\Enum\WebhookListener;
-use PostFinanceCheckout\PluginCore\State\ValidatesStateTransitions;
 
 /**
  * Provides default implementations for the lifecycle hooks.
